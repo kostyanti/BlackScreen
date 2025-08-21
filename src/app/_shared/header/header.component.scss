@@ -1,6 +1,76 @@
-.header{
-    .logo{
-        padding: 3px 0;
-        cursor: pointer;
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 18px;
+
+    .logo { cursor: pointer; }
+
+    .nav-components{
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+        height: 77px;
+        justify-content: space-between;
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+
+            .link {
+                font-weight: 600;
+                color: var(--main-color);
+                text-decoration: none;
+                padding: 4px 8px;
+                border-radius: 6px 6px 0 0;
+                transition: background 0.3s ease;
+                cursor: pointer;
+
+                &:hover { background: var(--second-transparent-0-6); }
+            }
+        }
+        
+        .lang-search {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+            color: var(--main-color);
+
+            .langs {
+                display: flex;
+                align-items: center;
+
+                .lang {
+                    text-decoration: none;
+                    font-weight: 100;
+                    transition: color 0.3s ease;
+                    color: var(--main-color);
+
+                    &:hover{ font-weight: 600; }
+                }
+
+                .active { font-weight: 600; }
+
+                .divider { margin: 0 6px; color: var(--main-color); }
+            }
+
+            .search-btn {
+                img { margin-right: 5px; }
+                display: flex;
+                align-items: center;
+                font-size: 18px;
+                background: var(--second-transparent-0-4);
+                border: none;
+                border-radius: 6px;
+                padding: 4px 12px 4px 7px;
+                font-weight: 600;
+                color: var(--main-color);
+                cursor: pointer;
+                transition: background 0.3s ease;
+
+                &:hover { background: var(--second-transparent-0-6) }
+            }
+        }
     }
 }
