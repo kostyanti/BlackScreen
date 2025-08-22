@@ -29,6 +29,7 @@
                 </button>
             </nav>
         </header>
+        <div class="space"></div>
         <footer class="player-footer">
             <button class="player-play-button player-button"><img class="img-play" src="/icons/play.svg"></button>
             <nav class="progress-container">
@@ -51,7 +52,7 @@
                     </app-slider>
                 </div>
                 <button class="player-button"><img src="/icons/settings.svg"></button>
-                <button class="player-button"><img src="/icons/full-screen.svg"></button>
+                <button class="player-button" (click)="toggleFullscreen()"><img src="/icons/full-screen.svg"></button>
             </div>
         </footer>
     </div>
