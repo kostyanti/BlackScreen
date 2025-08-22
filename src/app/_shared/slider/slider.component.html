@@ -1,0 +1,8 @@
+<div class="slider" (mousedown)="onTrackMouseDown($event)">
+  <div class="slider-track">
+    <div class="slider-thumb"
+         [style.left.%]="thumbPosition"
+         (mousedown)="startThumbDrag($event)">
+    </div>
+  </div>
+</div>

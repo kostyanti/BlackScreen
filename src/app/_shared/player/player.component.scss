@@ -1,0 +1,150 @@
+:host {
+    --player-second-color-r:           100;
+    --player-second-color-g:           100;
+    --player-second-color-b:           100;
+    
+    --player-background-color:         #0C1118;
+    --player-main-color:               #D9D9D9;
+    --player-second-color:             rgb(var(--second-color-r), var(--second-color-g), var(--second-color-b));
+    --player-second-transparent-0-6:   rgba(var(--second-color-r), var(--second-color-g), var(--second-color-b), 0.6);
+    --player-second-transparent-0-4:   rgba(var(--second-color-r), var(--second-color-g), var(--second-color-b), 0.4);
+    --player-second-transparent-0:     rgba(var(--second-color-r), var(--second-color-g), var(--second-color-b), 0);
+}
+
+.slider {
+    --slider-width: 100%;
+    --slider-height: 10px;
+    --slider-thumb-color: var(--player-main-color);
+    --slider-progress-color: var(--player-second-color);
+    --slider-bg-color: var(--player-second-transparent-0-6);
+}
+
+.player-button{
+    border-radius: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background-color: var(--second-color);
+}
+
+.player-main {
+    color: var(--player-main-color);
+
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+
+    max-width: 960px;
+    margin: 1.5em auto;
+
+    .player-p { margin-bottom: 0.1em; }
+
+    .player {
+        position: relative;
+        background-color: var(--player-background-color);
+        height: 640px;
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5em;
+            top: 0;
+            background: linear-gradient(to top, var(--player-second-transparent-0) 0%, var(--player-second-transparent-0-6) 50%, var(--player-second-color) 100%);
+            
+            nav {
+                display: flex;
+
+                button {
+                    display: flex;
+                    align-items: center;
+                    font-size: 20px;
+                    font-weight: 400;
+                    font-family: 'Inter', sans-serif;
+                    margin-right: 0.5em;
+                    border: none;
+                    color: var(--player-main-color);
+                    border-radius: 0.5em;
+                    padding: 5px 0.5em;
+                    background-color: var(--player-second-color);
+                    
+                    &:last-child { margin: 0; }
+                    &.chrome-cast, &.mini-player {
+                        padding: 4px;
+                    }
+                    .player-arrow { margin-left: 5px; }
+                }
+            }
+        }
+
+        .player-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5em;
+            bottom: 0;
+            background: linear-gradient(to bottom, var(--player-second-transparent-0) 0%, var(--player-second-transparent-0-6) 50%, var(--player-second-color) 100%);
+            
+            .player-play-button{
+                height: 3.8em;
+                width: 3.8em;
+                padding: 0;
+
+                .img-play {
+                    margin-left: 5px;
+                }
+            }
+
+            .progress-container{
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                height: 2.1em;
+                padding: 0.2em 0.5em;
+
+                .progress-time{
+                    margin: 0;
+                }
+            }
+            
+            .right-cintrols{
+                display: flex;
+                flex-direction: row;
+                align-items: end;
+                justify-content: end;
+
+                .sound-controll{
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+
+                    .mute-controll{
+                        padding: 0;
+                        background-color: transparent;
+                        height: 20px;
+                        width: auto;
+                        margin-left: 0;
+                    }
+
+                    .slider {
+                        --slider-width: 100px;
+                        margin-left: 0.5em;
+                    }
+                }
+
+                .player-button{
+                    height: 2.8em;
+                    width: 2.8em;
+                    margin-left: 0.5em;
+                }
+            }
+        }
+
+        .player-header, .player-footer{
+            position: absolute;
+            left: 0;
+            width: 98%;
+        }
+    }
+}
+

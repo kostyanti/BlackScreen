@@ -1,0 +1,58 @@
+<main class="player-main">
+    <p class="player-p">Приятного просмотра :)</p>
+    <div class="player">
+        <header class="player-header">
+            <nav>
+                <button class="drop-down decode-player">
+                    Kodik 
+                    <img class="player-arrow" src="/icons/dropdown-arrow.svg">
+                </button>
+                <button class="drop-down voice">
+                    Озвучка
+                    <img class="player-arrow" src="/icons/dropdown-arrow.svg">
+                </button>
+                <button class="drop-down season">
+                    Сезон 1
+                    <img class="player-arrow" src="/icons/dropdown-arrow.svg">
+                </button>
+                <button class="drop-down episode">
+                    Серия 1
+                    <img class="player-arrow" src="/icons/dropdown-arrow.svg">
+                </button>
+            </nav>
+            <nav>
+                <button class="chrome-cast">
+                    <img src="/icons/chromecast.svg">
+                </button>
+                <button class="mini-player">
+                    <img src="/icons/mini-player.svg">
+                </button>
+            </nav>
+        </header>
+        <footer class="player-footer">
+            <button class="player-play-button player-button"><img class="img-play" src="/icons/play.svg"></button>
+            <nav class="progress-container">
+                <p class="progress-time">00:00/00:00</p>
+                <app-slider 
+                    class="slider"
+                    [min]="0"
+                    [max]="100"
+                    [(value)]="currentPlayerValue">
+                </app-slider>
+            </nav>
+            <div class="right-cintrols">
+                <div class="sound-controll">
+                    <img class="player-button mute-controll" src="/icons/sound.svg">
+                    <app-slider 
+                        class="slider"
+                        [min]="0"
+                        [max]="100"
+                        [(value)]="currentSoundValue">
+                    </app-slider>
+                </div>
+                <button class="player-button"><img src="/icons/settings.svg"></button>
+                <button class="player-button"><img src="/icons/full-screen.svg"></button>
+            </div>
+        </footer>
+    </div>
+</main>
