@@ -21,12 +21,8 @@
                 </button>
             </nav>
             <nav>
-                <button class="chrome-cast">
-                    <img src="/icons/chromecast.svg">
-                </button>
-                <button class="mini-player">
-                    <img src="/icons/mini-player.svg">
-                </button>
+                <button class="chrome-cast" (click)="startCasting()"><img src="/icons/chromecast.svg"></button>
+                <button class="mini-player" (click)="togglePiP()"><img src="/icons/mini-player.svg"></button>
             </nav>
         </header>
         <div class="space"></div>
@@ -51,8 +47,173 @@
                         [(value)]="currentSoundValue">
                     </app-slider>
                 </div>
-                <button class="player-button"><img src="/icons/settings.svg"></button>
-                <button class="player-button" (click)="toggleFullscreen()"><img src="/icons/full-screen.svg"></button>
+                <button class="player-button player-button-settings" (click)="toggleSettings(SettingsPanel.Main)"><img src="/icons/settings.svg"></button>
+                <button class="player-button" (click)="toggleFullscreen()">
+                    <img src="/icons/full-screen.svg" *ngIf="!FullScreen">
+                    <img src="/icons/exit-from-full-screen.svg" *ngIf="FullScreen">
+                </button>
+
+                <div class="all-settings">
+                    <div class="settings-panel" *ngIf="settingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Main)">
+                            <div class="element-group">
+                                <img src="/icons/close.svg">
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Speed)">
+                            <p class="element-text">Скорость</p>
+                            <p class="element-value">1x</p>
+                        </div>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Quality)">
+                            <p class="element-text">Качество</p>
+                            <p class="element-value">1080p</p>
+                        </div>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.HotKeys)">
+                            <p class="element-text">Горячие клавиши</p>
+                        </div>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Color)">
+                            <p class="element-text">Настроить цвета</p>
+                        </div>
+                        <p class="group-text">Управление опенингом/эндингом</p>
+                        <div class="element">
+                            <p class="element-text">Пропустить опенинг</p>
+                            <label class="switch">
+                                <input type="checkbox" [(ngModel)]="SkipOpening">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Пропустить эндинг</p>
+                            <label class="switch">
+                                <input type="checkbox" [(ngModel)]="SkipEnding">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Настроить</p>
+                        </div>
+                        <p class="group-text">Управление воспроизвидением</p>
+                        <div class="element">
+                            <p class="element-text">Авто-воспроизведение</p>
+                            <label class="switch">
+                                <input type="checkbox" [(ngModel)]="AutoPlay">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="element" [class.disabled]="!AutoPlay" (click)="toggleSettings(SettingsPanel.Timer)">
+                            <p class="element-text">Проверка на сон</p>
+                            <p class="element-value">1ч</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="speedSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Speed)">
+                            <div class="element-group">
+                                <img src="/icons/close.svg">
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element value">
+                            <p class="element-text">0.5x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">0.75x</p>
+                        </div>
+                        <div class="element selected-value">
+                            <p class="element-text">1x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.25x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.5x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.75x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2.25x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2.5x</p>
+                        </div>
+                    </div>
+    
+                    <div class="settings-panel" *ngIf="timerSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Timer)">
+                            <div class="element-group">
+                                <img src="/icons/close.svg">
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element value">
+                            <p class="element-text">Отключено</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">Каждую серию</p>
+                        </div>
+                        <div class="element selected-value">
+                            <p class="element-text">1ч</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.5ч</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2ч</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="qualitySettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Quality)">
+                            <div class="element-group">
+                                <img src="/icons/close.svg">
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element value">
+                            <p class="element-text">1440p</p>
+                        </div>
+                        <div class="element selected-value">
+                            <p class="element-text">1080p</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">720p</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">420p</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">auto</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="colorSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Color)">
+                            <div class="element-group">
+                                <img src="/icons/close.svg">
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element main-color">
+                            <p class="element-text">Основной</p>
+                        </div>
+                        <div class="element second-color">
+                            <p class="element-text">Вторичный</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Сбросить</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </footer>
     </div>

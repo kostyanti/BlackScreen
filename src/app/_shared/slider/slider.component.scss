@@ -13,6 +13,7 @@
   width: 100%;
   transform: translateY(-50%);
   border-radius: var(--slider-height);
+  overflow: hidden;
 
   background: linear-gradient(
     to right,

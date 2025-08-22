@@ -11,6 +11,8 @@
     --player-second-transparent-0:     rgba(var(--second-color-r), var(--second-color-g), var(--second-color-b), 0);
 }
 
+p { margin: 0; }
+
 .slider {
     --slider-width: 100%;
     --slider-height: 10px;
@@ -41,6 +43,7 @@
     .player-p { margin-bottom: 0.1em; }
 
     .player {
+        position: relative;
         display: flex;
         flex-direction: column;
         background-color: var(--player-background-color);
@@ -68,9 +71,8 @@
                     background-color: var(--player-second-color);
                     
                     &:last-child { margin: 0; }
-                    &.chrome-cast, &.mini-player {
-                        padding: 4px;
-                    }
+                    &.chrome-cast { display: none; }
+                    &.chrome-cast, &.mini-player { padding: 4px; }
                     .player-arrow { margin-left: 5px; }
                 }
             }
@@ -106,7 +108,7 @@
                 }
             }
             
-            .right-cintrols{
+            .right-cintrols {
                 display: flex;
                 flex-direction: row;
                 align-items: end;
@@ -145,3 +147,137 @@
     }
 }
 
+.all-settings{
+    position: absolute;
+    right: 0.5em;
+    bottom: 3.5em;
+
+    display: flex;
+    align-items: start;
+    flex-direction: row-reverse;
+}
+
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5em;
+    margin-left: 0.5em;
+    border-radius: 0.5em;
+    background-color: var(--player-second-transparent-0-6);
+    font-size: 0.8em;
+    font-weight: 400;
+
+    filter: drop-shadow(0 3px 0 var(--player-background-color));
+
+    hr {
+        border-color: var(--player-second-transparent-0-6);
+        margin: 2.5px 0;
+    }
+
+    .group-text {
+        cursor: default;
+        margin-top: 0.8em;
+        font-size: 0.8em;
+        padding: 0 0.25em;
+        color: var(--player-second-color);
+    }
+
+    .element {
+        cursor: default;
+        padding: 0.15em 0.25em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 1em;
+        
+        .element-group { 
+            cursor: default;
+            margin: 0 0.25em;
+            display: flex; 
+            align-items: center;
+        }
+        
+        .element-value {
+            cursor: default;
+            color: var(--player-second-color);
+            font-size: 0.7em;
+            margin-right: 0.5em;
+        }
+
+        &.value {
+            cursor: default;
+            color: var(--player-second-color);
+            padding-left: 1.3em;
+        }
+
+        &.selected-value, &.main-color, &.second-color {
+            position: relative;
+            cursor: default;
+            padding-left: 1.3em;
+
+            &.selected-value { background-color: var(--player-second-transparent-0-6) };
+            &::before {
+                position: absolute;
+                content: "";
+                height: 0.5em;
+                width: 0.5em;
+                left: 0.5em;
+                bottom: 0.5em;
+                border-radius: 50%;
+                transition: 0.4s;
+
+            }
+            &.selected-value::before { background-color: var(--player-main-color) };
+            &.main-color::before { background-color: var(--player-main-color) };
+            &.second-color::before { background-color: var(--player-second-color) };
+        }
+        
+        .element-text { margin-left: 0.25em; }
+        &:hover{ background-color: var(--player-second-transparent-0-4); }
+        &.disabled { color: var(--player-second-color); }
+    }
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 2em;
+    height: 1em;
+    margin: 0 0.5em;
+
+    input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .slider {
+            background-color: var(--player-main-color);
+        }
+
+        &:checked + .slider::before {
+            transform: translateX(1em);
+            background-color: var(--player-second-color);
+        }
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--player-second-transparent-0-6);
+        border-radius: 1em;
+        transition: 0.4s;
+
+        &::before {
+            position: absolute;
+            content: "";
+            height: 0.78em;
+            width: 0.78em;
+            left: 0.14em;
+            bottom: 0.1em;
+            background-color: var(--player-main-color);
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+    }
+}
