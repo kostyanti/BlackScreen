@@ -44,6 +44,7 @@ p { margin: 0; }
         flex-direction: column;
         background-color: var(--player-background-color);
         height: 640px;
+        
 
         .player-header {
             display: flex;
@@ -75,6 +76,8 @@ p { margin: 0; }
         }
 
         .space { flex: 1; }
+
+        &.hide-cursor { cursor: none; }
 
         .player-footer {
             display: flex;
@@ -309,4 +312,12 @@ p { margin: 0; }
 svg {
     fill: var(--player-main-color);
     stroke: var(--player-main-color);
+}
+
+.player-controls {
+  transition: opacity 0.5s;
+}
+.player-controls.hidden {
+  opacity: 0;
+  pointer-events: none;
 }

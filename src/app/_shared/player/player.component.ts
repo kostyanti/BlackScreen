@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { SliderComponent } from '../slider/slider.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -30,6 +30,7 @@ export class PlayerComponent implements AfterViewInit {
 
   @ViewChild('mainColorPicker') mainColorPicker!: ElementRef<HTMLInputElement>; 
   @ViewChild('secondColorPicker') secondColorPicker!: ElementRef<HTMLInputElement>;
+  @ViewChild('playerWrapper', { static: true }) playerWrapper!: ElementRef;
 
   SettingsPanel = SettingsPanel;
 
@@ -43,7 +44,11 @@ export class PlayerComponent implements AfterViewInit {
   changeSkipKeysSettingsVisible = false;
 
   FullScreen = false;
-  Playing = false;
+  controlsVisible = true;
+  inactivityTimeout: any;
+  isPlaying = false;
+  isHovered = false;
+  timerIsOn = false;
 
   settings: Settings = defaultSettings;
   selectedSkipKey: number = 0;
@@ -71,6 +76,41 @@ export class PlayerComponent implements AfterViewInit {
     };
   }
 
+  startInactivityTimer() {
+    if (!this.isPlaying) return;
+    clearTimeout(this.inactivityTimeout);
+    this.inactivityTimeout = setTimeout(() => {
+      if (this.isPlaying) {
+        this.controlsVisible = false;
+      }
+    }, 3000);
+  }
+
+  toggleControlTimer(flag: boolean) {
+    this.controlsVisible = true;
+    this.timerIsOn = flag;
+
+    if (flag) this.startInactivityTimer();
+    else clearTimeout(this.inactivityTimeout);
+  }
+
+  resetControls() {
+    if (!this.timerIsOn) return;
+    this.controlsVisible = true;
+    this.startInactivityTimer();
+  }
+
+  onMouseEnter() { this.isHovered = true;}
+
+  onMouseLeave() { this.isHovered = false;}
+
+  @HostListener('document:mousemove', ['$event'])
+  handleMouseMove(event: MouseEvent) {
+    if (!this.playerWrapper) return;
+    if (!this.playerWrapper.nativeElement.contains(event.target)) return;
+    this.resetControls();
+  }
+
   async togglePiP() {
     const videoEl = document.querySelector('video') as HTMLVideoElement;
 
@@ -84,7 +124,10 @@ export class PlayerComponent implements AfterViewInit {
   }
 
   togglePlay() {
-    this.Playing = !this.Playing;
+    this.isPlaying = !this.isPlaying;
+
+    if(this.isPlaying) this.toggleControlTimer(true);
+    else this.toggleControlTimer(false);
   }
 
   toggleFullscreen() {
@@ -144,6 +187,7 @@ export class PlayerComponent implements AfterViewInit {
   }
 
   toggleSettings(panel: SettingsPanel) {
+    this.toggleControlTimer(false);
     switch(panel) {
       case SettingsPanel.Main:
         this.settingsVisible = !this.settingsVisible;
@@ -184,15 +228,12 @@ export class PlayerComponent implements AfterViewInit {
     this.hotKeysSettingsVisible = false;
     this.skipKeysSettingsVisible = false;
     this.changeSkipKeysSettingsVisible = false;
+    if (this.isPlaying) this.toggleControlTimer(true);
   }
 
   addSkipKey() {
     this.settings.skipKeys.push({ ...defaultSkipKey });
     this.saveSettings();
-  }
-
-  saveKey() {
-
   }
 
   selectKey(id: number) {
@@ -221,26 +262,10 @@ export class PlayerComponent implements AfterViewInit {
   }
 
   applyColors() {
-    console.clear();
-    console.log('Applying colors...');
-    console.log('Main color:', this.settings.playerMainColor);
-    console.log('Second color R:', this.settings.playerSecondColorR);
-    console.log('Second color G:', this.settings.playerSecondColorG);
-    console.log('Second color B:', this.settings.playerSecondColorB);
-    
     document.documentElement.style.setProperty('--player-main-color', this.settings.playerMainColor);
     document.documentElement.style.setProperty('--player-second-color-r', this.settings.playerSecondColorR.toString());
     document.documentElement.style.setProperty('--player-second-color-g', this.settings.playerSecondColorG.toString());
     document.documentElement.style.setProperty('--player-second-color-b', this.settings.playerSecondColorB.toString());
-
-    const main = getComputedStyle(document.documentElement).getPropertyValue('--player-main-color');
-    const r = getComputedStyle(document.documentElement).getPropertyValue('--player-second-color-r');
-    const g = getComputedStyle(document.documentElement).getPropertyValue('--player-second-color-g');
-    const b = getComputedStyle(document.documentElement).getPropertyValue('--player-second-color-b');
-
-    console.log('Computed values:');
-    console.log('Main color:', main);
-    console.log('R:', r, 'G:', g, 'B:', b);
   }
 
   setMainColor(event: Event) {
