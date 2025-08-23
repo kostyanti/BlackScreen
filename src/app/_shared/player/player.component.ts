@@ -1,8 +1,11 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { SliderComponent } from '../slider/slider.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SettingsPanel } from './SettingsPanel';
+import { defaultSkipKey, SkipKey } from './SkipKey';
+import { defaultSettings, Settings } from './Settings';
+import { StorageUtil } from '../StorageUtil';
 
 declare global {
   interface Window {
@@ -23,6 +26,11 @@ declare global {
   styleUrl: './player.component.scss'
 })
 export class PlayerComponent implements AfterViewInit {
+  private static readonly SETTINGS_KEY = 'settings-key';
+
+  @ViewChild('mainColorPicker') mainColorPicker!: ElementRef<HTMLInputElement>; 
+  @ViewChild('secondColorPicker') secondColorPicker!: ElementRef<HTMLInputElement>;
+
   SettingsPanel = SettingsPanel;
 
   settingsVisible = false;
@@ -31,17 +39,37 @@ export class PlayerComponent implements AfterViewInit {
   timerSettingsVisible = false;
   colorSettingsVisible = false;
   hotKeysSettingsVisible = false;
+  skipKeysSettingsVisible = false;
+  changeSkipKeysSettingsVisible = false;
 
-  currentPlayerValue = 0;
-  currentSoundValue = 0;
-
-  SelectedSpeed = 1;
-  SelectedQuality = 1;
-  SkipOpening = false;
-  SkipEnding = false;
-  AutoPlay = false;
   FullScreen = false;
-  SleepCheckTimer = 1;
+  Playing = false;
+
+  settings: Settings = defaultSettings;
+  selectedSkipKey: number = 0;
+
+  scrollPosition = { x: 0, y: 0 };
+
+  ngAfterViewInit() {
+    document.addEventListener('click', (e) => {
+      const panel = document.querySelector('.all-settings');
+      const button = document.querySelector('.player-button-settings');
+      
+      if (!panel?.contains(e.target as Node) && !button?.contains(e.target as Node)) {
+        this.closeAllSetings();
+      }
+    });
+
+    this.loadSettings();
+    
+    return;
+
+    window.__onGCastApiAvailable = (isAvailable: boolean) => {
+      if (isAvailable) {
+        this.initializeCast();
+      }
+    };
+  }
 
   async togglePiP() {
     const videoEl = document.querySelector('video') as HTMLVideoElement;
@@ -55,45 +83,35 @@ export class PlayerComponent implements AfterViewInit {
     }
   }
 
+  togglePlay() {
+    this.Playing = !this.Playing;
+  }
+
   toggleFullscreen() {
     const player = document.querySelector('.player') as HTMLElement;
 
     if (!document.fullscreenElement) {
+      this.scrollPosition = { x: window.scrollX, y: window.scrollY };
+      this.FullScreen = true;
+
       if (player.requestFullscreen) { player.requestFullscreen(); } 
       else if ((player as any).webkitRequestFullscreen) { (player as any).webkitRequestFullscreen(); } 
       else if ((player as any).msRequestFullscreen) { (player as any).msRequestFullscreen(); }
-      this.FullScreen = true;
-    } 
-    else {
+
+    } else {
+      const restoreScroll = () => {
+        window.scrollTo(this.scrollPosition.x, this.scrollPosition.y);
+        this.FullScreen = false;
+
+        document.removeEventListener('fullscreenchange', restoreScroll);
+      };
+
+      document.addEventListener('fullscreenchange', restoreScroll);
+
       if (document.exitFullscreen) { document.exitFullscreen(); } 
       else if ((document as any).webkitExitFullscreen) { (document as any).webkitExitFullscreen(); } 
       else if ((document as any).msExitFullscreen) { (document as any).msExitFullscreen(); }
-      this.FullScreen = false;
     }
-  }
-
-  ngAfterViewInit() {
-    document.addEventListener('click', (e) => {
-      const panel = document.querySelector('.all-settings');
-      const button = document.querySelector('.player-button-settings');
-      
-      if (!panel?.contains(e.target as Node) && !button?.contains(e.target as Node)) {
-        this.settingsVisible = false;
-        this.qualitySettingsVisible = false;
-        this.speedSettingsVisible = false;
-        this.timerSettingsVisible = false;
-        this.colorSettingsVisible = false;
-        this.hotKeysSettingsVisible = false;
-      }
-    });
-    
-    return;
-
-    window.__onGCastApiAvailable = (isAvailable: boolean) => {
-      if (isAvailable) {
-        this.initializeCast();
-      }
-    };
   }
 
   initializeCast() {
@@ -129,13 +147,7 @@ export class PlayerComponent implements AfterViewInit {
     switch(panel) {
       case SettingsPanel.Main:
         this.settingsVisible = !this.settingsVisible;
-        if (!this.settingsVisible){
-          this.qualitySettingsVisible = false;
-          this.speedSettingsVisible = false;
-          this.timerSettingsVisible = false;
-          this.colorSettingsVisible = false;
-          this.hotKeysSettingsVisible = false;
-        }
+        if (!this.settingsVisible) this.closeAllSetings();
         break;
       case SettingsPanel.Quality:
         this.qualitySettingsVisible = !this.qualitySettingsVisible;
@@ -144,7 +156,7 @@ export class PlayerComponent implements AfterViewInit {
         this.speedSettingsVisible = !this.speedSettingsVisible;
         break;
       case SettingsPanel.Timer:
-        if (this.AutoPlay) this.timerSettingsVisible = !this.timerSettingsVisible;
+        if (this.settings.AutoPlay) this.timerSettingsVisible = !this.timerSettingsVisible;
         else this.timerSettingsVisible = false;
         break;
       case SettingsPanel.Color:
@@ -153,6 +165,128 @@ export class PlayerComponent implements AfterViewInit {
       case SettingsPanel.HotKeys:
         this.hotKeysSettingsVisible = !this.hotKeysSettingsVisible;
         break;
+      case SettingsPanel.SkipKeys:
+        if (this.settings.SkipKeys) this.skipKeysSettingsVisible = !this.skipKeysSettingsVisible;
+        else this.skipKeysSettingsVisible = false;
+        break;
+      case SettingsPanel.ChangeSkipKeys:
+        this.changeSkipKeysSettingsVisible = !this.changeSkipKeysSettingsVisible;
+        break;
     }
+  }
+
+  closeAllSetings() {
+    this.settingsVisible = false;
+    this.qualitySettingsVisible = false;
+    this.speedSettingsVisible = false;
+    this.timerSettingsVisible = false;
+    this.colorSettingsVisible = false;
+    this.hotKeysSettingsVisible = false;
+    this.skipKeysSettingsVisible = false;
+    this.changeSkipKeysSettingsVisible = false;
+  }
+
+  addSkipKey() {
+    this.settings.skipKeys.push({ ...defaultSkipKey });
+    this.saveSettings();
+  }
+
+  saveKey() {
+
+  }
+
+  selectKey(id: number) {
+    if (this.selectedSkipKey != id) {
+      this.changeSkipKeysSettingsVisible = true;
+      this.selectedSkipKey = id;
+    }
+    else this.toggleSettings(SettingsPanel.ChangeSkipKeys);
+  }
+
+  removeSkipKey(index: number, event?: MouseEvent) {
+    event?.stopPropagation();
+    this.changeSkipKeysSettingsVisible = false;
+    this.settings.skipKeys.splice(index, 1);
+    this.saveSettings();
+  }
+
+  saveSettings() {
+    StorageUtil.save<Settings>(PlayerComponent.SETTINGS_KEY, this.settings);
+  }
+
+  loadSettings() {
+    const loaded = StorageUtil.load<Settings>(PlayerComponent.SETTINGS_KEY);
+    this.settings = loaded ?? defaultSettings;
+    this.applyColors();
+  }
+
+  applyColors() {
+    console.clear();
+    console.log('Applying colors...');
+    console.log('Main color:', this.settings.playerMainColor);
+    console.log('Second color R:', this.settings.playerSecondColorR);
+    console.log('Second color G:', this.settings.playerSecondColorG);
+    console.log('Second color B:', this.settings.playerSecondColorB);
+    
+    document.documentElement.style.setProperty('--player-main-color', this.settings.playerMainColor);
+    document.documentElement.style.setProperty('--player-second-color-r', this.settings.playerSecondColorR.toString());
+    document.documentElement.style.setProperty('--player-second-color-g', this.settings.playerSecondColorG.toString());
+    document.documentElement.style.setProperty('--player-second-color-b', this.settings.playerSecondColorB.toString());
+
+    const main = getComputedStyle(document.documentElement).getPropertyValue('--player-main-color');
+    const r = getComputedStyle(document.documentElement).getPropertyValue('--player-second-color-r');
+    const g = getComputedStyle(document.documentElement).getPropertyValue('--player-second-color-g');
+    const b = getComputedStyle(document.documentElement).getPropertyValue('--player-second-color-b');
+
+    console.log('Computed values:');
+    console.log('Main color:', main);
+    console.log('R:', r, 'G:', g, 'B:', b);
+  }
+
+  setMainColor(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+
+    this.settings.playerMainColor = input.value;
+    this.applyColors();
+    this.saveSettings();
+  }
+
+  setSecondColor(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+
+    const hexColor = input.value;
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+
+    this.settings.playerSecondColorR = r;
+    this.settings.playerSecondColorG = g;
+    this.settings.playerSecondColorB = b;
+
+    this.applyColors();
+    this.saveSettings();
+  }
+
+  toHex(value: number): string {
+    return value.toString(16).padStart(2, '0').toUpperCase();
+  }
+
+  resetColors() {
+    this.settings.playerMainColor = defaultSettings.playerMainColor;
+    this.settings.playerSecondColorR = defaultSettings.playerSecondColorR;
+    this.settings.playerSecondColorG = defaultSettings.playerSecondColorG;
+    this.settings.playerSecondColorB = defaultSettings.playerSecondColorB;
+    this.applyColors();
+    this.saveSettings();
+  }
+
+  openMainColorPicker() {
+    this.mainColorPicker.nativeElement.click();
+  }
+
+  openSecondColorPicker() {
+    this.secondColorPicker.nativeElement.click();
   }
 }

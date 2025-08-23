@@ -4,5 +4,7 @@ export enum SettingsPanel {
   Speed = 'speed',
   Timer = 'timer',
   Color = 'color',
-  HotKeys = 'hotKeys'
+  HotKeys = 'hotKeys',
+  SkipKeys = 'skipKeys',
+  ChangeSkipKeys = 'changeSkipKeys'
 }
