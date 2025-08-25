@@ -26,6 +26,7 @@ declare global {
   styleUrl: './player.component.scss'
 })
 export class PlayerComponent implements AfterViewInit {
+  //#region fields
   private static readonly SETTINGS_KEY = 'settings-key';
 
   @ViewChild('mainColorPicker') mainColorPicker!: ElementRef<HTMLInputElement>; 
@@ -34,26 +35,35 @@ export class PlayerComponent implements AfterViewInit {
 
   SettingsPanel = SettingsPanel;
 
-  settingsVisible = false;
-  qualitySettingsVisible = false;
-  speedSettingsVisible = false;
-  timerSettingsVisible = false;
-  colorSettingsVisible = false;
-  hotKeysSettingsVisible = false;
-  skipKeysSettingsVisible = false;
-  changeSkipKeysSettingsVisible = false;
-
-  FullScreen = false;
-  controlsVisible = true;
+  settingsVisible: boolean = false;
+  qualitySettingsVisible: boolean = false;
+  speedSettingsVisible: boolean = false;
+  timerSettingsVisible: boolean = false;
+  colorSettingsVisible: boolean = false;
+  hotKeysSettingsVisible: boolean = false;
+  skipKeysSettingsVisible: boolean = false;
+  changeSkipKeysSettingsVisible: boolean = false;
+  
+  FullScreen: boolean = false;
+  controlsVisible: boolean = true;
   inactivityTimeout: any;
-  isPlaying = false;
-  isHovered = false;
-  timerIsOn = false;
-
+  isPlaying: boolean = false;
+  isHovered: boolean = false;
+  timerIsOn: boolean = false;
+  
   settings: Settings = defaultSettings;
+  currentPlayerValue: number = 0;
   selectedSkipKey: number = 0;
-
+  
   scrollPosition = { x: 0, y: 0 };
+
+  currentSkipSegment: boolean = false;
+  skipTimer: any = null;
+  skipProgress: number = 0;
+  skipDuration = 5000;
+  activeSkipKey: SkipKey | null = null;
+  ignoreSkipKey: SkipKey[] = [];
+  //#endregion
 
   ngAfterViewInit() {
     document.addEventListener('click', (e) => {
@@ -100,9 +110,9 @@ export class PlayerComponent implements AfterViewInit {
     this.startInactivityTimer();
   }
 
-  onMouseEnter() { this.isHovered = true;}
+  onMouseEnter() { this.isHovered = true; }
 
-  onMouseLeave() { this.isHovered = false;}
+  onMouseLeave() { this.isHovered = false; }
 
   @HostListener('document:mousemove', ['$event'])
   handleMouseMove(event: MouseEvent) {
@@ -256,8 +266,8 @@ export class PlayerComponent implements AfterViewInit {
   }
 
   loadSettings() {
-    const loaded = StorageUtil.load<Settings>(PlayerComponent.SETTINGS_KEY);
-    this.settings = loaded ?? defaultSettings;
+    const loaded = StorageUtil.load<Settings>(PlayerComponent.SETTINGS_KEY, defaultSettings);
+    this.settings = loaded;
     this.applyColors();
   }
 
@@ -313,5 +323,79 @@ export class PlayerComponent implements AfterViewInit {
 
   openSecondColorPicker() {
     this.secondColorPicker.nativeElement.click();
+  }
+
+  checkSkipSegment() {
+    if (!this.settings.skipKeys || !this.settings.skipKeys.length) return;
+
+    const current = this.currentPlayerValue;
+    const formatToSeconds = (time: string) => {
+      const [mm, ss] = time.split(':').map(Number);
+      return mm * 60 + ss;
+    };
+
+    const segment = this.settings.skipKeys.find(key => {
+      const start = formatToSeconds(key.start);
+      const end = formatToSeconds(key.end);
+      const ignored = this.ignoreSkipKey.includes(key);
+      return current >= start && current <= end && key.active && !ignored;
+    });
+
+
+    if (segment) {
+      if (!this.currentSkipSegment) {
+        this.currentSkipSegment = true;
+        this.activeSkipKey = segment;
+        this.startSkipTimer();
+      }
+    } else {
+      this.stopSkipTimer();
+      this.currentSkipSegment = false;
+      this.activeSkipKey = null;
+    }
+  }
+
+  startSkipTimer() {
+    this.stopSkipTimer();
+    this.skipProgress = 0;
+
+    const step = 50;
+    const increment = 100 / (this.skipDuration / step);
+
+    this.skipTimer = setInterval(() => {
+      this.skipProgress += increment;
+      if (this.skipProgress >= 100) {
+        this.skipVideo();
+      }
+    }, step);
+  }
+
+  stopSkipTimer() {
+    if (this.skipTimer) {
+      clearInterval(this.skipTimer);
+      this.skipTimer = null;
+    }
+    this.skipProgress = 0;
+  }
+
+  skipVideo() {
+    if (!this.activeSkipKey) return;
+
+    const [mm, ss] = this.activeSkipKey.end.split(':').map(Number);
+    this.currentPlayerValue = mm * 60 + ss;
+
+    this.stopSkipTimer();
+    this.currentSkipSegment = false;
+    this.activeSkipKey = null;
+  }
+
+  showElement() {
+    if (!this.activeSkipKey) return;
+
+    this.ignoreSkipKey.push(this.activeSkipKey);
+
+    this.stopSkipTimer();
+    this.currentSkipSegment = false;
+    this.activeSkipKey = null;
   }
 }

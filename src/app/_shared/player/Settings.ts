@@ -1,7 +1,6 @@
 import { defaultSkipKey, SkipKey } from "./SkipKey";
 
 export interface Settings {
-    currentPlayerValue: number;
     currentSoundValue: number;
 
     SelectedSpeed: number;
@@ -19,7 +18,6 @@ export interface Settings {
 }
 
 export const defaultSettings: Settings = {
-    currentPlayerValue: 0,
     currentSoundValue: 0,
 
     SelectedSpeed: 1,

@@ -1,13 +1,18 @@
 :host {
     --player-background-color: #0C1118;
+    --player-background-color-transparent: rgba(12, 17, 24, 0.5);
     --player-second-color: rgb(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b));
     --player-second-transparent-0-6: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0.6);
     --player-second-transparent-0-4: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0.4);
     --player-second-transparent-0: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0);
 }
 
-
 p { margin: 0; }
+
+svg {
+    fill: var(--player-main-color);
+    stroke: var(--player-main-color);
+}
 
 .slider {
     --slider-width: 100%;
@@ -309,15 +314,64 @@ p { margin: 0; }
     }
 }
 
-svg {
-    fill: var(--player-main-color);
-    stroke: var(--player-main-color);
+.player-controls {
+    transition: opacity 0.5s;
+
+    &.hidden{
+        opacity: 0;
+        pointer-events: none;
+    }
 }
 
-.player-controls {
-  transition: opacity 0.5s;
-}
-.player-controls.hidden {
-  opacity: 0;
-  pointer-events: none;
+.skip-segment-panel {
+    position: absolute;
+    content: "";
+    height: 100%;
+    width: 100%;
+    background-color: var(--player-background-color-transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .buttons{
+        display: flex;
+        flex-direction: column;
+        margin-top: 1em;
+
+        button{
+            border: none;
+            background: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: 0.7em;
+            color: var(--player-main-color);
+        }
+        .skip{
+            --progress-width: 0%;
+            
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 1em;
+            background-color: var(--player-second-transparent-0-6);
+            border-radius: 1em;
+            overflow: hidden;
+
+            svg { margin-right: 0.5em; }
+
+            &::before{
+                position: absolute;
+                content: "";
+                background-color: var(--player-main-color);
+                height: 2px;
+                width: var(--progress-width);
+                bottom: 0;
+                left: 0;
+                transition: width 0.05s linear;
+            }
+        }
+        .show{
+            padding: 0.3em;
+        }
+    }
 }

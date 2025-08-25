@@ -12,15 +12,15 @@ export class StorageUtil {
     }
   }
 
-  public static load<T>(key: string): T | null {
-    if (!this.isBrowser()) return null;
+  public static load<T>(key: string, fallback: T): T {
+    if (!this.isBrowser()) return fallback;
     const raw = localStorage.getItem(key);
-    if (!raw) return null;
+    if (!raw) return fallback;
     try {
       return JSON.parse(raw) as T;
     } catch (e) {
       console.error(`Unable to read key data "${key}"`, e);
-      return null;
+      return fallback;
     }
   }
 
