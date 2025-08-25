@@ -1,0 +1,401 @@
+import { Component, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { SliderComponent } from '../slider/slider.component';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { SettingsPanel } from './SettingsPanel';
+import { defaultSkipKey, SkipKey } from './SkipKey';
+import { defaultSettings, Settings } from './Settings';
+import { StorageUtil } from '../StorageUtil';
+
+declare global {
+  interface Window {
+    __onGCastApiAvailable: (isAvailable: boolean) => void;
+    cast: any;
+    chrome: any;
+  }
+}
+
+@Component({
+  selector: 'app-player',
+  imports: [
+    SliderComponent,
+    FormsModule,
+    CommonModule
+  ],
+  templateUrl: './player.component.html',
+  styleUrl: './player.component.scss'
+})
+export class PlayerComponent implements AfterViewInit {
+  //#region fields
+  private static readonly SETTINGS_KEY = 'settings-key';
+
+  @ViewChild('mainColorPicker') mainColorPicker!: ElementRef<HTMLInputElement>; 
+  @ViewChild('secondColorPicker') secondColorPicker!: ElementRef<HTMLInputElement>;
+  @ViewChild('playerWrapper', { static: true }) playerWrapper!: ElementRef;
+
+  SettingsPanel = SettingsPanel;
+
+  settingsVisible: boolean = false;
+  qualitySettingsVisible: boolean = false;
+  speedSettingsVisible: boolean = false;
+  timerSettingsVisible: boolean = false;
+  colorSettingsVisible: boolean = false;
+  hotKeysSettingsVisible: boolean = false;
+  skipKeysSettingsVisible: boolean = false;
+  changeSkipKeysSettingsVisible: boolean = false;
+  
+  FullScreen: boolean = false;
+  controlsVisible: boolean = true;
+  inactivityTimeout: any;
+  isPlaying: boolean = false;
+  isHovered: boolean = false;
+  timerIsOn: boolean = false;
+  
+  settings: Settings = defaultSettings;
+  currentPlayerValue: number = 0;
+  selectedSkipKey: number = 0;
+  
+  scrollPosition = { x: 0, y: 0 };
+
+  currentSkipSegment: boolean = false;
+  skipTimer: any = null;
+  skipProgress: number = 0;
+  skipDuration = 5000;
+  activeSkipKey: SkipKey | null = null;
+  ignoreSkipKey: SkipKey[] = [];
+  //#endregion
+
+  ngAfterViewInit() {
+    document.addEventListener('click', (e) => {
+      const panel = document.querySelector('.all-settings');
+      const button = document.querySelector('.player-button-settings');
+      
+      if (!panel?.contains(e.target as Node) && !button?.contains(e.target as Node)) {
+        this.closeAllSetings();
+      }
+    });
+
+    this.loadSettings();
+    
+    return;
+
+    window.__onGCastApiAvailable = (isAvailable: boolean) => {
+      if (isAvailable) {
+        this.initializeCast();
+      }
+    };
+  }
+
+  startInactivityTimer() {
+    if (!this.isPlaying) return;
+    clearTimeout(this.inactivityTimeout);
+    this.inactivityTimeout = setTimeout(() => {
+      if (this.isPlaying) {
+        this.controlsVisible = false;
+      }
+    }, 3000);
+  }
+
+  toggleControlTimer(flag: boolean) {
+    this.controlsVisible = true;
+    this.timerIsOn = flag;
+
+    if (flag) this.startInactivityTimer();
+    else clearTimeout(this.inactivityTimeout);
+  }
+
+  resetControls() {
+    if (!this.timerIsOn) return;
+    this.controlsVisible = true;
+    this.startInactivityTimer();
+  }
+
+  onMouseEnter() { this.isHovered = true; }
+
+  onMouseLeave() { this.isHovered = false; }
+
+  @HostListener('document:mousemove', ['$event'])
+  handleMouseMove(event: MouseEvent) {
+    if (!this.playerWrapper) return;
+    if (!this.playerWrapper.nativeElement.contains(event.target)) return;
+    this.resetControls();
+  }
+
+  async togglePiP() {
+    const videoEl = document.querySelector('video') as HTMLVideoElement;
+
+    if (!videoEl) { return; }
+
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+    } else {
+      await videoEl.requestPictureInPicture();
+    }
+  }
+
+  togglePlay() {
+    this.isPlaying = !this.isPlaying;
+
+    if(this.isPlaying) this.toggleControlTimer(true);
+    else this.toggleControlTimer(false);
+  }
+
+  toggleFullscreen() {
+    const player = document.querySelector('.player') as HTMLElement;
+
+    if (!document.fullscreenElement) {
+      this.scrollPosition = { x: window.scrollX, y: window.scrollY };
+      this.FullScreen = true;
+
+      if (player.requestFullscreen) { player.requestFullscreen(); } 
+      else if ((player as any).webkitRequestFullscreen) { (player as any).webkitRequestFullscreen(); } 
+      else if ((player as any).msRequestFullscreen) { (player as any).msRequestFullscreen(); }
+
+    } else {
+      const restoreScroll = () => {
+        window.scrollTo(this.scrollPosition.x, this.scrollPosition.y);
+        this.FullScreen = false;
+
+        document.removeEventListener('fullscreenchange', restoreScroll);
+      };
+
+      document.addEventListener('fullscreenchange', restoreScroll);
+
+      if (document.exitFullscreen) { document.exitFullscreen(); } 
+      else if ((document as any).webkitExitFullscreen) { (document as any).webkitExitFullscreen(); } 
+      else if ((document as any).msExitFullscreen) { (document as any).msExitFullscreen(); }
+    }
+  }
+
+  initializeCast() {
+    const context = window.cast.framework.CastContext.getInstance();
+    context.setOptions({
+      receiverApplicationId: 'YOUR_CUSTOM_APP_ID',
+      autoJoinPolicy: window.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+    });
+  }
+
+  startCasting() {
+
+  }
+
+  casting(url: string, base: string, season: string, episode: string) {
+    const context = window.cast.framework.CastContext.getInstance();
+    context.requestSession()
+      .then(() => {
+        const session = context.getCurrentSession();
+        const message = {
+          url: url,
+          base: base,
+          season: season,
+          episode: episode
+        };
+        session.sendMessage('urn:x-cast:com.example.custom', message)
+          .then(() => console.log('Message sent'))
+          .catch((err: any) => console.error('Error sending message', err));
+      });
+  }
+
+  toggleSettings(panel: SettingsPanel) {
+    this.toggleControlTimer(false);
+    switch(panel) {
+      case SettingsPanel.Main:
+        this.settingsVisible = !this.settingsVisible;
+        if (!this.settingsVisible) this.closeAllSetings();
+        break;
+      case SettingsPanel.Quality:
+        this.qualitySettingsVisible = !this.qualitySettingsVisible;
+        break;
+      case SettingsPanel.Speed:
+        this.speedSettingsVisible = !this.speedSettingsVisible;
+        break;
+      case SettingsPanel.Timer:
+        if (this.settings.AutoPlay) this.timerSettingsVisible = !this.timerSettingsVisible;
+        else this.timerSettingsVisible = false;
+        break;
+      case SettingsPanel.Color:
+        this.colorSettingsVisible = !this.colorSettingsVisible;
+        break;
+      case SettingsPanel.HotKeys:
+        this.hotKeysSettingsVisible = !this.hotKeysSettingsVisible;
+        break;
+      case SettingsPanel.SkipKeys:
+        if (this.settings.SkipKeys) this.skipKeysSettingsVisible = !this.skipKeysSettingsVisible;
+        else this.skipKeysSettingsVisible = false;
+        break;
+      case SettingsPanel.ChangeSkipKeys:
+        this.changeSkipKeysSettingsVisible = !this.changeSkipKeysSettingsVisible;
+        break;
+    }
+  }
+
+  closeAllSetings() {
+    this.settingsVisible = false;
+    this.qualitySettingsVisible = false;
+    this.speedSettingsVisible = false;
+    this.timerSettingsVisible = false;
+    this.colorSettingsVisible = false;
+    this.hotKeysSettingsVisible = false;
+    this.skipKeysSettingsVisible = false;
+    this.changeSkipKeysSettingsVisible = false;
+    if (this.isPlaying) this.toggleControlTimer(true);
+  }
+
+  addSkipKey() {
+    this.settings.skipKeys.push({ ...defaultSkipKey });
+    this.saveSettings();
+  }
+
+  selectKey(id: number) {
+    if (this.selectedSkipKey != id) {
+      this.changeSkipKeysSettingsVisible = true;
+      this.selectedSkipKey = id;
+    }
+    else this.toggleSettings(SettingsPanel.ChangeSkipKeys);
+  }
+
+  removeSkipKey(index: number, event?: MouseEvent) {
+    event?.stopPropagation();
+    this.changeSkipKeysSettingsVisible = false;
+    this.settings.skipKeys.splice(index, 1);
+    this.saveSettings();
+  }
+
+  saveSettings() {
+    StorageUtil.save<Settings>(PlayerComponent.SETTINGS_KEY, this.settings);
+  }
+
+  loadSettings() {
+    const loaded = StorageUtil.load<Settings>(PlayerComponent.SETTINGS_KEY, defaultSettings);
+    this.settings = loaded;
+    this.applyColors();
+  }
+
+  applyColors() {
+    document.documentElement.style.setProperty('--player-main-color', this.settings.playerMainColor);
+    document.documentElement.style.setProperty('--player-second-color-r', this.settings.playerSecondColorR.toString());
+    document.documentElement.style.setProperty('--player-second-color-g', this.settings.playerSecondColorG.toString());
+    document.documentElement.style.setProperty('--player-second-color-b', this.settings.playerSecondColorB.toString());
+  }
+
+  setMainColor(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+
+    this.settings.playerMainColor = input.value;
+    this.applyColors();
+    this.saveSettings();
+  }
+
+  setSecondColor(event: Event) {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+
+    const hexColor = input.value;
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+
+    this.settings.playerSecondColorR = r;
+    this.settings.playerSecondColorG = g;
+    this.settings.playerSecondColorB = b;
+
+    this.applyColors();
+    this.saveSettings();
+  }
+
+  toHex(value: number): string {
+    return value.toString(16).padStart(2, '0').toUpperCase();
+  }
+
+  resetColors() {
+    this.settings.playerMainColor = defaultSettings.playerMainColor;
+    this.settings.playerSecondColorR = defaultSettings.playerSecondColorR;
+    this.settings.playerSecondColorG = defaultSettings.playerSecondColorG;
+    this.settings.playerSecondColorB = defaultSettings.playerSecondColorB;
+    this.applyColors();
+    this.saveSettings();
+  }
+
+  openMainColorPicker() {
+    this.mainColorPicker.nativeElement.click();
+  }
+
+  openSecondColorPicker() {
+    this.secondColorPicker.nativeElement.click();
+  }
+
+  checkSkipSegment() {
+    if (!this.settings.skipKeys || !this.settings.skipKeys.length) return;
+
+    const current = this.currentPlayerValue;
+    const formatToSeconds = (time: string) => {
+      const [mm, ss] = time.split(':').map(Number);
+      return mm * 60 + ss;
+    };
+
+    const segment = this.settings.skipKeys.find(key => {
+      const start = formatToSeconds(key.start);
+      const end = formatToSeconds(key.end);
+      const ignored = this.ignoreSkipKey.includes(key);
+      return current >= start && current <= end && key.active && !ignored;
+    });
+
+
+    if (segment) {
+      if (!this.currentSkipSegment) {
+        this.currentSkipSegment = true;
+        this.activeSkipKey = segment;
+        this.startSkipTimer();
+      }
+    } else {
+      this.stopSkipTimer();
+      this.currentSkipSegment = false;
+      this.activeSkipKey = null;
+    }
+  }
+
+  startSkipTimer() {
+    this.stopSkipTimer();
+    this.skipProgress = 0;
+
+    const step = 50;
+    const increment = 100 / (this.skipDuration / step);
+
+    this.skipTimer = setInterval(() => {
+      this.skipProgress += increment;
+      if (this.skipProgress >= 100) {
+        this.skipVideo();
+      }
+    }, step);
+  }
+
+  stopSkipTimer() {
+    if (this.skipTimer) {
+      clearInterval(this.skipTimer);
+      this.skipTimer = null;
+    }
+    this.skipProgress = 0;
+  }
+
+  skipVideo() {
+    if (!this.activeSkipKey) return;
+
+    const [mm, ss] = this.activeSkipKey.end.split(':').map(Number);
+    this.currentPlayerValue = mm * 60 + ss;
+
+    this.stopSkipTimer();
+    this.currentSkipSegment = false;
+    this.activeSkipKey = null;
+  }
+
+  showElement() {
+    if (!this.activeSkipKey) return;
+
+    this.ignoreSkipKey.push(this.activeSkipKey);
+
+    this.stopSkipTimer();
+    this.currentSkipSegment = false;
+    this.activeSkipKey = null;
+  }
+}

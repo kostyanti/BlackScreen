@@ -1,0 +1,27 @@
+<div class="content">
+  <p class="hello-label">
+    {{ selectedPage === 'main' ? 'В очереде / Просмотреное' : selectedPage | titlecase }}
+  </p>
+
+  <div class="titles">
+    <div class="title" *ngFor="let title of titles">
+      <img class="img" [src]="title.img"/>
+      <p class="name">{{ title.name }}</p>
+      <p class="info">{{ title.year}}, {{title.country}}, {{title.genre}}</p>
+    </div>
+  </div>
+
+  <div class="pagination">
+    <button (click)="goToPage(1)">|←</button>
+    <button (click)="goToPage(currentPage - 1)">←</button>
+
+    <button *ngFor="let page of pages" 
+            [class.active]="page === currentPage" 
+            (click)="goToPage(page)">
+      {{ page }}
+    </button>
+
+    <button (click)="goToPage(currentPage + 1)">→</button>
+    <button (click)="goToPage(totalPages)">→|</button>
+  </div>
+</div>

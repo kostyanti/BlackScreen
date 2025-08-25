@@ -1,0 +1,397 @@
+<main class="player-main">
+    <p class="player-p">Приятного просмотра :)</p>
+    <div #playerWrapper class="player"
+     (mouseenter)="onMouseEnter()"
+     (mouseleave)="onMouseLeave()"
+     [class.hide-cursor]="!controlsVisible && timerIsOn">
+        <header class="player-header player-controls" [class.hidden]="!controlsVisible">
+            <nav>
+                <button class="drop-down decode-player">
+                    Kodik 
+                    <svg class="player-arrow" width="19" height="16" viewBox="0 0 19 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0981 14.5C10.9434 16.5 8.05662 16.5 6.90192 14.5L1.27276 4.75C0.118057 2.75 1.56143 0.25 3.87083 0.25L15.1292 0.25C17.4386 0.25 18.8819 2.75 17.7272 4.75L12.0981 14.5Z"/>
+                    </svg>
+                </button>
+                <button class="drop-down voice">
+                    Озвучка
+                    <svg class="player-arrow" width="19" height="16" viewBox="0 0 19 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0981 14.5C10.9434 16.5 8.05662 16.5 6.90192 14.5L1.27276 4.75C0.118057 2.75 1.56143 0.25 3.87083 0.25L15.1292 0.25C17.4386 0.25 18.8819 2.75 17.7272 4.75L12.0981 14.5Z"/>
+                    </svg>
+                </button>
+                <button class="drop-down season">
+                    Сезон 1
+                    <svg class="player-arrow" width="19" height="16" viewBox="0 0 19 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0981 14.5C10.9434 16.5 8.05662 16.5 6.90192 14.5L1.27276 4.75C0.118057 2.75 1.56143 0.25 3.87083 0.25L15.1292 0.25C17.4386 0.25 18.8819 2.75 17.7272 4.75L12.0981 14.5Z"/>
+                    </svg>
+                </button>
+                <button class="drop-down episode">
+                    Серия 1
+                    <svg class="player-arrow" width="19" height="16" viewBox="0 0 19 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0981 14.5C10.9434 16.5 8.05662 16.5 6.90192 14.5L1.27276 4.75C0.118057 2.75 1.56143 0.25 3.87083 0.25L15.1292 0.25C17.4386 0.25 18.8819 2.75 17.7272 4.75L12.0981 14.5Z"/>
+                    </svg>
+                </button>
+            </nav>
+            <nav>
+                <button class="chrome-cast" (click)="startCasting()">
+                    <svg width="32" height="26" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.00294 11V6C1.00294 3.23858 3.24151 1 6.00293 1H26.0029C28.7643 1 31.0029 3.23858 31.0029 6V20C31.0029 22.7614 28.7635 25 26.0021 25C22.4224 25 19.389 25 15.0029 25M1 13.5V13.5C7.35127 13.5 12.5 18.6487 12.5 25V25M1 16.5V16.5C5.69442 16.5 9.5 20.3056 9.5 25V25M1.00294 19.5V19.5C4.03888 19.5 6.5 21.9641 6.5 25V25M1.00294 23V23C2.10588 23 3 23.8971 3 25V25" fill="none" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <button class="mini-player" (click)="togglePiP()">
+                    <svg width="32" height="26" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M31 12.5V6C31 3.23858 28.7614 1 26 1H6C3.23858 1 1 3.23858 1 6V20C1 22.7614 3.2395 25 6.00093 25C8.97964 25 11.2645 25 15.5 25M21 25H27C29.2091 25 31 23.2091 31 21V18C31 15.7909 29.2091 14 27 14H21C18.7909 14 17 15.7909 17 18V21C17 23.2091 18.7909 25 21 25Z" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </nav>
+        </header>
+        <div class="space"></div>
+        <footer class="player-footer player-controls" [class.hidden]="!controlsVisible">
+            <button class="player-play-button player-button" (click)="togglePlay()">
+                <svg class="img-play" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="!isPlaying">
+                    <path d="M22.5 9.66987C25.8333 11.5944 25.8333 16.4056 22.5 18.3301L7.50001 26.9904C4.16667 28.9149 0 26.5093 0 22.6603L0 5.33975C0 1.49075 4.16667 -0.914883 7.5 1.00962L22.5 9.66987Z"/>
+                </svg>
+                <svg  width="18" height="28" viewBox="0 0 18 28" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="isPlaying">
+                    <rect width="5" height="28" rx="2.5"/>
+                    <rect x="13" width="5" height="28" rx="2.5"/>
+                </svg>
+            </button>
+            <nav class="progress-container">
+                <p class="progress-time">00:00/00:00</p>
+                <app-slider 
+                    class="slider"
+                    [min]="0"
+                    [max]="100"
+                    [(value)]="currentPlayerValue">
+                </app-slider>
+            </nav>
+            <div class="right-cintrols">
+                <div class="sound-controll">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 10V8.5C1 7.94772 1.44771 7.5 2 7.5H4L6.14834 4.00894C6.6768 3.1502 8 3.52472 8 4.53304V13.4248C8 14.3933 6.7609 14.7962 6.19126 14.013L4 11L2 11C1.44772 11 1 10.5523 1 10Z" stroke="none"/>
+                        <path d="M10.9999 4.5C10.9999 4.5 13.0027 6 12.9999 9C12.9971 12 10.4999 14 10.4999 14M13.9999 1.5C13.9999 1.5 17 4 17 9C17 14 13.5 17 13.5 17M4 11L2 11C1.44772 11 1 10.5523 1 10V8.5C1 7.94772 1.44772 7.5 2 7.5H4L6.14834 4.00894C6.6768 3.1502 8 3.52472 8 4.53304V13.4248C8 14.3933 6.7609 14.7962 6.19126 14.013L4 11Z" fill="none" stroke-width="2"/>
+                    </svg>
+                    <app-slider 
+                        class="slider"
+                        [min]="0"
+                        [max]="100"
+                        [(value)]="settings.currentSoundValue">
+                    </app-slider>
+                </div>
+                <button class="player-button player-button-settings" (click)="toggleSettings(SettingsPanel.Main)">
+                    <svg width="31" height="32" viewBox="0 0 31 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M19.0355 19.5355C20.9882 17.5829 20.9882 14.4171 19.0355 12.4645C17.0829 10.5118 13.9171 10.5118 11.9645 12.4645C10.0118 14.4171 10.0118 17.5829 11.9645 19.5355C13.9171 21.4882 17.0829 21.4882 19.0355 19.5355Z" fill="none" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M13.6702 2.40844L8.99609 6.00609C8.69478 6.23801 8.35212 6.41054 7.98637 6.51448L3.95317 7.66071C2.33333 8.12107 1.40963 9.82422 1.90727 11.433L3.04576 15.1134C3.22441 15.691 3.22441 16.309 3.04576 16.8866L1.90727 20.567C1.40963 22.1758 2.33333 23.8789 3.95316 24.3393L7.98637 25.4855C8.35212 25.5895 8.69478 25.762 8.99609 25.9939L13.6702 29.5916C14.7488 30.4218 16.2512 30.4218 17.3298 29.5916L22.0039 25.9939C22.3052 25.762 22.6479 25.5895 23.0136 25.4855L27.0468 24.3393C28.6667 23.8789 29.5904 22.1758 29.0927 20.567L27.9542 16.8866C27.7756 16.309 27.7756 15.691 27.9542 15.1134L29.0927 11.433C29.5904 9.82422 28.6667 8.12107 27.0468 7.66072L23.0136 6.51448C22.6479 6.41054 22.3052 6.23801 22.0039 6.00609L17.3298 2.40844C16.2512 1.57821 14.7488 1.57821 13.6702 2.40844Z" fill="none" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                <button class="player-button" (click)="toggleFullscreen()">
+                    <svg width="31" height="31" viewBox="0 0 31 31" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="!FullScreen">
+                        <path d="M2 19V26C2 27.6569 3.34315 29 5 29H12M29 19V26C29 27.6569 27.6569 29 26 29H19M12 2L5 2C3.34315 2 2 3.34315 2 5V12M19 2L26 2C27.6569 2 29 3.34315 29 5V12" fill="none" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    <svg width="31" height="31" viewBox="0 0 31 31" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="FullScreen">
+                        <path d="M2 19H9C10.6569 19 12 20.3431 12 22V29M29 19H22C20.3431 19 19 20.3431 19 22V29M12 2V9C12 10.6569 10.6569 12 9 12H2M19 2V9C19 10.6569 20.3431 12 22 12H29" fill="none" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                </button>
+
+                <div class="all-settings">
+                    <div class="settings-panel" *ngIf="settingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Main)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Speed)">
+                            <p class="element-text">Скорость</p>
+                            <p class="element-value">1x</p>
+                        </div>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Quality)">
+                            <p class="element-text">Качество</p>
+                            <p class="element-value">1080p</p>
+                        </div>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.HotKeys)">
+                            <p class="element-text">Горячие клавиши</p>
+                        </div>
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Color)">
+                            <p class="element-text">Настроить цвета</p>
+                        </div>
+                        <p class="group-text">Управление ключами пропуска</p>
+                        <div class="element">
+                            <p class="element-text">Пропускать ключи</p>
+                            <label class="switch">
+                                <input type="checkbox" [(ngModel)]="settings.SkipKeys" (change)="saveSettings()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="element" [class.disabled]="!settings.SkipKeys" (click)="toggleSettings(SettingsPanel.SkipKeys)">
+                            <p class="element-text">Настроить</p>
+                        </div>
+                        <p class="group-text">Управление воспроизвидением</p>
+                        <div class="element">
+                            <p class="element-text">Авто-воспроизведение</p>
+                            <label class="switch">
+                                <input type="checkbox" [(ngModel)]="settings.AutoPlay" (change)="saveSettings()">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="element" [class.disabled]="!settings.AutoPlay" (click)="toggleSettings(SettingsPanel.Timer)">
+                            <p class="element-text">Проверка на сон</p>
+                            <p class="element-value">1ч</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="speedSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Speed)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element value">
+                            <p class="element-text">0.5x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">0.75x</p>
+                        </div>
+                        <div class="element selected-value">
+                            <p class="element-text">1x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.25x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.5x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.75x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2.25x</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2.5x</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="hotKeysSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.HotKeys)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element">
+                            <p class="element-text">Воспроизведение / Пауза</p>
+                            <p class="element-value">Space / K</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Вперед на 10 секунд</p>
+                            <p class="element-value">→</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Назад на 10 секунд</p>
+                            <p class="element-value">←</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Громче на 10%</p>
+                            <p class="element-value">↑</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Тише на 10%</p>
+                            <p class="element-value">↓</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Быстрее на .25x</p>
+                            <p class="element-value">Shift + ></p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Медленее на .25x</p>
+                            <p class="element-value">Shift + <</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Отключить / Включить звук</p>
+                            <p class="element-value">M</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Полноэкранный режим</p>
+                            <p class="element-value">F</p>
+                        </div>
+                        <div class="element">
+                            <p class="element-text">Картинка в картинке</p>
+                            <p class="element-value">P</p>
+                        </div>
+                    </div>
+    
+                    <div class="settings-panel" *ngIf="settings.AutoPlay && timerSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Timer)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element value">
+                            <p class="element-text">Отключено</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">Каждую серию</p>
+                        </div>
+                        <div class="element selected-value">
+                            <p class="element-text">1ч</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">1.5ч</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">2ч</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="qualitySettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Quality)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element value">
+                            <p class="element-text">1440p</p>
+                        </div>
+                        <div class="element selected-value">
+                            <p class="element-text">1080p</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">720p</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">420p</p>
+                        </div>
+                        <div class="element value">
+                            <p class="element-text">auto</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="colorSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.Color)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element main-color" (click)="openMainColorPicker()">
+                            <p class="element-text">Основной</p>
+                        </div>
+                        <div class="element second-color" (click)="openSecondColorPicker()">
+                            <p class="element-text">Вторичный</p>
+                        </div>
+                        <div class="element" (click)="resetColors()">
+                            <p class="element-text">Сбросить</p>
+                        </div>
+                        
+                        <input #mainColorPicker type="color"
+                            [value]="settings.playerMainColor"
+                            style="display:none"
+                            (input)="setMainColor($event)">
+                            
+                        <input #secondColorPicker type="color"
+                            [value]="'#'+toHex(settings.playerSecondColorR)+toHex(settings.playerSecondColorG)+toHex(settings.playerSecondColorB)"
+                            style="display:none"
+                            (input)="setSecondColor($event)">
+
+                    </div>
+                    
+                    <div class="settings-panel" *ngIf="settings.SkipKeys && skipKeysSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.SkipKeys)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="list">
+                            <div class="element" *ngFor="let key of settings.skipKeys; let i = index" (click)="selectKey(i)">
+                                <label class="switch margin">
+                                    <input type="checkbox" [(ngModel)]="key.active" (change)="saveSettings()">
+                                    <span class="slider"></span>
+                                </label>
+                                <p class="element-text margin">{{key.name}}</p>
+                                <svg class="margin" (click)="removeSkipKey(i, $event)" width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="element" (click)="addSkipKey()">
+                            <p class="element-text">Добавить</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-panel" *ngIf="settings.SkipKeys && skipKeysSettingsVisible && changeSkipKeysSettingsVisible">
+                        <div class="element" (click)="toggleSettings(SettingsPanel.ChangeSkipKeys)">
+                            <div class="element-group">
+                                <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect y="14.1667" width="20.0347" height="4.00694" rx="2" transform="rotate(-45 0 14.1667)" stroke="none"/>
+                                    <rect x="2.8335" width="20.0347" height="4.00694" rx="2" transform="rotate(45 2.8335 0)" stroke="none"/>
+                                </svg>
+                                <p class="element-text">Закрыть</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <input class="element element-input" [(ngModel)]="settings.skipKeys[selectedSkipKey].name">
+                        <p class="group-text">Временная метка от:</p>
+                        <input class="element element-input" [(ngModel)]="settings.skipKeys[selectedSkipKey].start">
+                        <p class="group-text">Временная метка к:</p>
+                        <input class="element element-input" [(ngModel)]="settings.skipKeys[selectedSkipKey].end">
+                        <hr>
+                        <div class="element" (click)="saveSettings(); toggleSettings(SettingsPanel.ChangeSkipKeys);">
+                            <p class="element-text">Сохранить</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <div class="skip-segment-panel" *ngIf="currentSkipSegment && activeSkipKey" >
+            <div class="buttons">
+                <button class="skip" 
+                        [style.--progress-width.%]="skipProgress" 
+                        (click)="skipVideo()">
+                    <svg width="25" height="19" viewBox="0 0 25 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.5 6.90192C16.5 8.05662 16.5 10.9434 14.5 12.0981L4.75 17.7272C2.75 18.8819 0.249999 17.4386 0.249999 15.1292L0.25 3.87083C0.25 1.56143 2.75 0.118058 4.75 1.27276L14.5 6.90192Z" stroke="none"/>
+                        <path d="M23.5 6.90192C25.5 8.05662 25.5 10.9434 23.5 12.0981L13.75 17.7272C11.75 18.8819 9.25 17.4386 9.25 15.1292L9.25 3.87083C9.25 1.56143 11.75 0.118058 13.75 1.27276L23.5 6.90192Z" stroke="none"/>
+                    </svg>
+                    Пропустить {{ activeSkipKey.name }}
+                </button>
+                <button class="show" (click)="showElement()">Смотреть</button>
+            </div>
+        </div>
+    </div>
+</main>

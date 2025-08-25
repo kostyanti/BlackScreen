@@ -1,3 +1,27 @@
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter_18pt-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter_18pt-Bold.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter_18pt-ExtraBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --second-color-r:           100;
   --second-color-g:           100;
@@ -17,6 +41,8 @@ body {
   margin: 0;
   background-color: var(--fourth-color);
   color: var(--main-color);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
 }
 
 app-root {

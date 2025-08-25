@@ -1,0 +1,58 @@
+p {
+    margin: 0;
+}
+
+.info{
+    margin-top: 0.5em;
+    font-size: 19px;
+
+    .detalis{
+        display: flex;
+
+        .image{
+            height: 275px;
+            width: 200px;
+            margin-right: 0.5em;
+            border-radius: 0.5em;
+            background-color: var(--third-color);
+        }
+
+        .right-info{
+            .ratings{
+                width: 730px;
+                height: 50px;
+                overflow: auto;
+                display: flex;
+
+                .rating{
+                    white-space: nowrap;
+                    display: flex;
+                    align-items: end;
+                    padding: 0.5em 1em;
+                    margin-right: 0.5em;
+                    border-radius: 0.5em;
+                    margin-bottom: 0.5em;
+                    background-color: var(--third-color);
+
+                    .sub-title{
+                        font-size: 12px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.title{
+    display: flex;
+}
+
+.sub-title{
+    color: var(--second-color);
+    padding: 0 0 0 0.5em;
+}
+
+.original-name{
+    color: var(--second-color);
+    font-size: 0.7em;
+}

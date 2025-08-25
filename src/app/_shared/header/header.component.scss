@@ -36,6 +36,7 @@
             gap: 10px;
             margin-top: 5px;
             color: var(--main-color);
+            font-weight: 600;
 
             .langs {
                 display: flex;
@@ -43,14 +44,15 @@
 
                 .lang {
                     text-decoration: none;
-                    font-weight: 100;
                     transition: color 0.3s ease;
                     color: var(--main-color);
+                    padding: 4px 6px;
+                    border-radius: 5px;
 
-                    &:hover{ font-weight: 600; }
+                    &:hover{ background-color: var(--second-transparent-0-6); }
                 }
 
-                .active { font-weight: 600; }
+                .active { background-color: var(--second-transparent-0-4); cursor: default; }
 
                 .divider { margin: 0 6px; color: var(--main-color); }
             }
