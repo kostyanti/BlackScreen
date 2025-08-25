@@ -23,7 +23,11 @@ declare global {
     CommonModule
   ],
   templateUrl: './player.component.html',
-  styleUrl: './player.component.scss'
+  styleUrls: [
+    './player.component.scss',
+    './playerB.component.scss',
+    './playerC.component.scss'
+  ]
 })
 export class PlayerComponent implements AfterViewInit {
   //#region fields

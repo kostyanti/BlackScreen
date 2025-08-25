@@ -1,0 +1,107 @@
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5em;
+    margin-left: 0.5em;
+    border-radius: 0.5em;
+    background-color: var(--player-second-transparent-0-6);
+    font-size: 0.8em;
+    font-weight: 400;
+    width: max-content; 
+    height: max-content;
+    max-width: 300px;
+
+    filter: drop-shadow(0 3px 0 var(--player-background-color));
+
+    hr {
+        border-color: var(--player-second-transparent-0-6);
+        margin: 2.5px 0;
+    }
+
+    .group-text {
+        cursor: default;
+        margin-top: 0.4em;
+        margin-bottom: 0.1em;
+        font-size: 0.8em;
+        padding: 0 0.25em;
+        color: var(--player-second-color);
+    }
+
+    .element {
+        cursor: default;
+        padding: 0.15em 0.25em;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 1em;
+        
+        .element-group { 
+            cursor: default;
+            margin: 0 0.25em;
+            display: flex; 
+            align-items: center;
+        }
+        
+        .element-value {
+            cursor: default;
+            color: var(--player-second-color);
+            font-size: 0.7em;
+            margin: 0 0.5em;
+        }
+
+        &.value {
+            cursor: default;
+            color: var(--player-second-color);
+            padding-left: 1.3em;
+        }
+
+        &.selected-value, &.main-color, &.second-color {
+            position: relative;
+            cursor: default;
+            padding-left: 1.3em;
+
+            &.selected-value { background-color: var(--player-second-transparent-0-6) };
+            &::before {
+                position: absolute;
+                content: "";
+                height: 0.5em;
+                width: 0.5em;
+                left: 0.5em;
+                bottom: 0.5em;
+                border-radius: 50%;
+                transition: 0.4s;
+
+            }
+            &.selected-value::before { background-color: var(--player-main-color) };
+            &.main-color::before { background-color: var(--player-main-color) };
+            &.second-color::before { background-color: var(--player-second-color) };
+        }
+
+        .margin { margin: 0 0.3em 0 0.1em; }
+        .element-text { margin-left: 0.25em; }
+        &:hover{ background-color: var(--player-second-transparent-0-4); }
+        &.disabled { color: var(--player-second-color); }
+    }
+
+    .element-input {
+        background-color: var(--player-second-color);
+        border: none;
+        color: var(--player-main-color);
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 1em;
+        margin: 0.25em 0.1em;
+        padding-left: 0.5em;
+        outline: none;
+
+        &:focus-visible{
+            border: none;
+            background-color: var(--player-second-transparent-0-4);
+        }
+    }
+
+    .list {
+        max-height: 10em;
+        overflow-y: auto;
+    }
+}

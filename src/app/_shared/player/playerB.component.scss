@@ -1,0 +1,140 @@
+p { margin: 0; }
+
+svg {
+    fill: var(--player-main-color);
+    stroke: var(--player-main-color);
+}
+
+.slider {
+    --slider-width: 100%;
+    --slider-height: 10px;
+    --slider-thumb-color: var(--player-main-color);
+    --slider-progress-color: var(--player-main-color);
+    --slider-bg-color: var(--player-second-transparent-0-6);
+}
+
+.player-button{
+    border-radius: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background-color: var(--player-second-color);
+}
+
+.all-settings{
+    position: absolute;
+    right: 0.5em;
+    bottom: 3.5em;
+
+    display: flex;
+    align-items: start;
+    flex-direction: row-reverse;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 2em;
+    height: 1em;
+    margin-left: 0.5em;
+    margin-right: 0.15em;
+
+    input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+
+        &:checked + .slider {
+            background-color: var(--player-main-color);
+        }
+
+        &:checked + .slider::before {
+            transform: translateX(1em);
+            background-color: var(--player-second-color);
+        }
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--player-second-transparent-0-6);
+        border-radius: 1em;
+        transition: 0.4s;
+
+        &::before {
+            position: absolute;
+            content: "";
+            height: 0.78em;
+            width: 0.78em;
+            left: 0.14em;
+            bottom: 0.1em;
+            background-color: var(--player-main-color);
+            border-radius: 50%;
+            transition: 0.4s;
+        }
+    }
+}
+
+.player-controls {
+    transition: opacity 0.5s;
+
+    &.hidden{
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
+.skip-segment-panel {
+    position: absolute;
+    content: "";
+    height: 100%;
+    width: 100%;
+    background-color: var(--player-background-color-transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .buttons{
+        display: flex;
+        flex-direction: column;
+        margin-top: 1em;
+
+        button{
+            border: none;
+            background: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            font-size: 0.7em;
+            color: var(--player-main-color);
+        }
+        .skip{
+            --progress-width: 0%;
+            
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 1em;
+            background-color: var(--player-second-transparent-0-6);
+            border-radius: 1em;
+            overflow: hidden;
+
+            svg { margin-right: 0.5em; }
+
+            &::before{
+                position: absolute;
+                content: "";
+                background-color: var(--player-main-color);
+                height: 2px;
+                width: var(--progress-width);
+                bottom: 0;
+                left: 0;
+                transition: width 0.05s linear;
+            }
+        }
+        .show{
+            padding: 0.3em;
+        }
+    }
+}
