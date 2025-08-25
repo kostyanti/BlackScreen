@@ -43,6 +43,10 @@ export class PagableComponent {
     switch(this.selectedPage) {
       case SelectPage.Main:
         this.titles = StorageUtil.load<TitleItem[]>(PagableComponent.VIEWED_KEY, []);
+        if(this.titles.length < 1) {
+          this.selectedPage = SelectPage.Films;
+          this.loadContent();
+        }
         break;
       case SelectPage.Applications:
         this.titles = this.loadApplications();
