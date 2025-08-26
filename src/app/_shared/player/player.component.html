@@ -4,6 +4,14 @@
      (mouseenter)="onMouseEnter()"
      (mouseleave)="onMouseLeave()"
      [class.hide-cursor]="!controlsVisible && timerIsOn">
+        <video 
+            #videoEl
+            src="./Test.mp4"
+            muted
+            playsinline
+            disablePictureInPicture
+            controlslist="nodownload noplaybackrate nofullscreen">
+        </video>
         <header class="player-header player-controls" [class.hidden]="!controlsVisible">
             <nav>
                 <button class="drop-down decode-player">
@@ -56,12 +64,13 @@
                 </svg>
             </button>
             <nav class="progress-container">
-                <p class="progress-time">00:00/00:00</p>
+                <p class="progress-time">{{currentPlayerLabel}}/{{videoDurationLabel}}</p>
                 <app-slider 
                     class="slider"
                     [min]="0"
                     [max]="100"
-                    [(value)]="currentPlayerValue">
+                    [(value)]="currentPlayerValue"
+                    (valueChange)="seekTo($event)">
                 </app-slider>
             </nav>
             <div class="right-cintrols">
@@ -74,7 +83,8 @@
                         class="slider"
                         [min]="0"
                         [max]="100"
-                        [(value)]="settings.currentSoundValue">
+                        [(value)]="currentSoundValue"
+                        (valueChange)="setVolume($event)">
                     </app-slider>
                 </div>
                 <button class="player-button player-button-settings" (click)="toggleSettings(SettingsPanel.Main)">
@@ -379,7 +389,8 @@
                 </div>
             </div>
         </footer>
-        <div class="skip-segment-panel" *ngIf="currentSkipSegment && activeSkipKey" >
+        <div class="skip-segment-panel" 
+            [ngClass]="{'visible': currentSkipSegment}">
             <div class="buttons">
                 <button class="skip" 
                         [style.--progress-width.%]="skipProgress" 

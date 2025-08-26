@@ -1,8 +1,6 @@
-import { defaultSkipKey, SkipKey } from "./SkipKey";
+import { SkipKey } from "./SkipKey";
 
 export interface Settings {
-    currentSoundValue: number;
-
     SelectedSpeed: number;
     SelectedQuality: number;
     SkipKeys: boolean;
@@ -18,8 +16,6 @@ export interface Settings {
 }
 
 export const defaultSettings: Settings = {
-    currentSoundValue: 0,
-
     SelectedSpeed: 1,
     SelectedQuality: 1,
     SkipKeys: false,
