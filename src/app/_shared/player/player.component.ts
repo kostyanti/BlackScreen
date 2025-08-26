@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener, OnInit } from '@angular/core';
 import { SliderComponent } from '../slider/slider.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -29,10 +29,12 @@ declare global {
     './playerC.component.scss'
   ]
 })
-export class PlayerComponent implements AfterViewInit {
+export class PlayerComponent implements OnInit {
   //#region fields
   private static readonly SETTINGS_KEY = 'settings-key';
+  private static readonly PLAYER_VOLUME_KEY = 'player-volume';
 
+  @ViewChild('videoEl', { static: true }) videoEl!: ElementRef<HTMLVideoElement>;
   @ViewChild('mainColorPicker') mainColorPicker!: ElementRef<HTMLInputElement>; 
   @ViewChild('secondColorPicker') secondColorPicker!: ElementRef<HTMLInputElement>;
   @ViewChild('playerWrapper', { static: true }) playerWrapper!: ElementRef;
@@ -56,7 +58,11 @@ export class PlayerComponent implements AfterViewInit {
   timerIsOn: boolean = false;
   
   settings: Settings = defaultSettings;
+  currentSoundValue: number = 0;
   currentPlayerValue: number = 0;
+  currentPlayerLabel: string = '00:00';
+  videoDuration: number = 0;
+  videoDurationLabel: string = '00:00';
   selectedSkipKey: number = 0;
   
   scrollPosition = { x: 0, y: 0 };
@@ -65,11 +71,28 @@ export class PlayerComponent implements AfterViewInit {
   skipTimer: any = null;
   skipProgress: number = 0;
   skipDuration = 5000;
-  activeSkipKey: SkipKey | null = null;
+  activeSkipKey: SkipKey = defaultSkipKey;
   ignoreSkipKey: SkipKey[] = [];
   //#endregion
 
-  ngAfterViewInit() {
+  ngOnInit() {
+    const video = this.videoEl.nativeElement;
+
+    video.addEventListener('timeupdate', () => {
+      this.currentPlayerValue = video.currentTime;
+      const current = Math.floor(video.currentTime);
+      this.currentPlayerLabel = this.formatTime(current);
+      if(this.settings.SkipKeys) this.checkSkipSegment();
+    });
+
+    video.addEventListener('loadedmetadata', () => {
+      const duration = Math.floor(video.duration);
+      this.videoDuration = duration;
+      this.videoDurationLabel = this.formatTime(duration);
+    });
+
+    this.setVolume(StorageUtil.load<number>(PlayerComponent.PLAYER_VOLUME_KEY, 0));
+
     document.addEventListener('click', (e) => {
       const panel = document.querySelector('.all-settings');
       const button = document.querySelector('.player-button-settings');
@@ -88,6 +111,17 @@ export class PlayerComponent implements AfterViewInit {
         this.initializeCast();
       }
     };
+  }
+
+  private formatTime(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+
+    if (h > 0) {
+      return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
+    }
+    return [m, s].map(v => String(v).padStart(2, '0')).join(':');
   }
 
   startInactivityTimer() {
@@ -138,10 +172,16 @@ export class PlayerComponent implements AfterViewInit {
   }
 
   togglePlay() {
+    const video = this.videoEl.nativeElement;
     this.isPlaying = !this.isPlaying;
 
-    if(this.isPlaying) this.toggleControlTimer(true);
-    else this.toggleControlTimer(false);
+    if (this.isPlaying) {
+      video.play();
+      this.toggleControlTimer(true);
+    } else {
+      video.pause();
+      this.toggleControlTimer(false);
+    }
   }
 
   toggleFullscreen() {
@@ -342,7 +382,7 @@ export class PlayerComponent implements AfterViewInit {
       const start = formatToSeconds(key.start);
       const end = formatToSeconds(key.end);
       const ignored = this.ignoreSkipKey.includes(key);
-      return current >= start && current <= end && key.active && !ignored;
+      return current >= start && current <= end - 5 && key.active && !ignored;
     });
 
 
@@ -355,7 +395,6 @@ export class PlayerComponent implements AfterViewInit {
     } else {
       this.stopSkipTimer();
       this.currentSkipSegment = false;
-      this.activeSkipKey = null;
     }
   }
 
@@ -386,11 +425,10 @@ export class PlayerComponent implements AfterViewInit {
     if (!this.activeSkipKey) return;
 
     const [mm, ss] = this.activeSkipKey.end.split(':').map(Number);
-    this.currentPlayerValue = mm * 60 + ss;
+    this.seekTo(mm * 60 + ss);
 
     this.stopSkipTimer();
     this.currentSkipSegment = false;
-    this.activeSkipKey = null;
   }
 
   showElement() {
@@ -400,6 +438,16 @@ export class PlayerComponent implements AfterViewInit {
 
     this.stopSkipTimer();
     this.currentSkipSegment = false;
-    this.activeSkipKey = null;
+  }
+
+  setVolume(value: number) {
+    this.currentSoundValue = value;
+    this.videoEl.nativeElement.volume = value / 100;
+    StorageUtil.save<number>(PlayerComponent.PLAYER_VOLUME_KEY, value);
+  }
+
+  seekTo(value: number) {
+    this.currentPlayerValue = value;
+    this.videoEl.nativeElement.currentTime = value;
   }
 }

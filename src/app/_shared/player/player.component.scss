@@ -25,7 +25,12 @@
         flex-direction: column;
         background-color: var(--player-background-color);
         height: 640px;
-        
+
+        video {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+        }
 
         .player-header {
             display: flex;
@@ -123,6 +128,7 @@
 
         .player-header, .player-footer{
             padding: 0.5em;
+            z-index: 1;
         }
     }
 }
