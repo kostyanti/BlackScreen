@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, HostListener, OnInit } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener, OnInit, AfterViewInit, NgZone, ChangeDetectorRef, Input } from '@angular/core';
 import { SliderComponent } from '../slider/slider.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,7 @@ import { SettingsPanel } from './SettingsPanel';
 import { defaultSkipKey, SkipKey } from './SkipKey';
 import { defaultSettings, Settings } from './Settings';
 import { StorageUtil } from '../StorageUtil';
+import Hls from 'hls.js';
 
 declare global {
   interface Window {
@@ -29,10 +30,12 @@ declare global {
     './playerC.component.scss'
   ]
 })
-export class PlayerComponent implements OnInit {
+export class PlayerComponent implements AfterViewInit {
   //#region fields
   private static readonly SETTINGS_KEY = 'settings-key';
   private static readonly PLAYER_VOLUME_KEY = 'player-volume';
+
+  videoUrl: string = 'https://p78.kodik.info/s/m/Ly9jbG91ZC5rb2Rpay1zdG9yYWdlLmNvbS91c2VydXBsb2Fkcy9kMzZkM2FlMS1lYmQzLTQ4MDAtYmFmMi01OTcyZDVhNzY5MDU/f5d0647cfc6e5e3441299b67645e1390786845d318683a9051cf31fc42c1821c:2025082910/720.mp4:hls:manifest.m3u8';
 
   @ViewChild('videoEl', { static: true }) videoEl!: ElementRef<HTMLVideoElement>;
   @ViewChild('mainColorPicker') mainColorPicker!: ElementRef<HTMLInputElement>; 
@@ -58,6 +61,7 @@ export class PlayerComponent implements OnInit {
   timerIsOn: boolean = false;
   
   settings: Settings = defaultSettings;
+ 
   currentSoundValue: number = 0;
   currentPlayerValue: number = 0;
   currentPlayerLabel: string = '00:00';
@@ -75,23 +79,45 @@ export class PlayerComponent implements OnInit {
   ignoreSkipKey: SkipKey[] = [];
   //#endregion
 
-  ngOnInit() {
+  constructor(
+    private ngZone: NgZone,
+  ) {}
+
+  ngAfterViewInit() {
     const video = this.videoEl.nativeElement;
 
+    if (Hls.isSupported() && this.videoUrl) {
+      const hls = new Hls();
+      hls.loadSource(this.videoUrl);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play();
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = this.videoUrl;
+      video.addEventListener('loadedmetadata', () => video.play());
+    }
+
     video.addEventListener('timeupdate', () => {
-      this.currentPlayerValue = video.currentTime;
-      const current = Math.floor(video.currentTime);
-      this.currentPlayerLabel = this.formatTime(current);
-      if(this.settings.SkipKeys) this.checkSkipSegment();
+      this.ngZone.run(() => {
+        this.currentPlayerValue = video.currentTime;
+        this.currentPlayerLabel = this.formatTime(Math.floor(video.currentTime));
+      });
     });
 
     video.addEventListener('loadedmetadata', () => {
-      const duration = Math.floor(video.duration);
-      this.videoDuration = duration;
-      this.videoDurationLabel = this.formatTime(duration);
+      this.ngZone.run(() => {
+        this.videoDuration = video.duration;
+        this.videoDurationLabel = this.formatTime(Math.floor(video.duration));
+      });
     });
 
-    this.setVolume(StorageUtil.load<number>(PlayerComponent.PLAYER_VOLUME_KEY, 0));
+    this.ngZone.runOutsideAngular(() => {
+      const volume = StorageUtil.load<number>(PlayerComponent.PLAYER_VOLUME_KEY, 0);
+      setTimeout(() => {
+        this.ngZone.run(() => this.setVolume(volume));
+      });
+    });
 
     document.addEventListener('click', (e) => {
       const panel = document.querySelector('.all-settings');
@@ -160,14 +186,21 @@ export class PlayerComponent implements OnInit {
   }
 
   async togglePiP() {
-    const videoEl = document.querySelector('video') as HTMLVideoElement;
+    const video = this.videoEl.nativeElement;
 
-    if (!videoEl) { return; }
+    if (!document.pictureInPictureEnabled) {
+      alert('Picture-in-Picture не підтримується вашим браузером');
+      return;
+    }
 
-    if (document.pictureInPictureElement) {
-      await document.exitPictureInPicture();
-    } else {
-      await videoEl.requestPictureInPicture();
+    try {
+      if (video !== document.pictureInPictureElement) {
+        await video.requestPictureInPicture();
+      } else {
+        await document.exitPictureInPicture();
+      }
+    } catch (err) {
+      console.error('Помилка при включенні PiP:', err);
     }
   }
 
