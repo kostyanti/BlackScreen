@@ -7,6 +7,10 @@
     --player-second-transparent-0: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0);
 }
 
+.fp-play-icon{
+    background-color: #00d9ff;
+}
+
 .player-main {
     color: var(--player-main-color);
 
@@ -26,7 +30,7 @@
         background-color: var(--player-background-color);
         height: 640px;
 
-        video {
+        iframe, video {
             position: absolute;
             height: 100%;
             width: 100%;

@@ -4,15 +4,14 @@
      (mouseenter)="onMouseEnter()"
      (mouseleave)="onMouseLeave()"
      [class.hide-cursor]="!controlsVisible && timerIsOn">
-        <video 
+        <!-- <iframe 
             #videoEl
-            src="./Test.mp4"
-            muted
-            playsinline
-            disablePictureInPicture
-            controlslist="nodownload noplaybackrate nofullscreen">
-        </video>
-        <header class="player-header player-controls" [class.hidden]="!controlsVisible">
+            src="//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p" 
+            frameborder="0" 
+            allowfullscreen 
+            allow="autoplay *; fullscreen *"></iframe> -->
+        <video src="//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p"></video>
+        <header class="player-header player-controls" [class.hidden]="true || !controlsVisible">
             <nav>
                 <button class="drop-down decode-player">
                     Kodik 
@@ -53,7 +52,7 @@
             </nav>
         </header>
         <div class="space"></div>
-        <footer class="player-footer player-controls" [class.hidden]="!controlsVisible">
+        <footer class="player-footer player-controls" [class.hidden]="true || !controlsVisible">
             <button class="player-play-button player-button" (click)="togglePlay()">
                 <svg class="img-play" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="!isPlaying">
                     <path d="M22.5 9.66987C25.8333 11.5944 25.8333 16.4056 22.5 18.3301L7.50001 26.9904C4.16667 28.9149 0 26.5093 0 22.6603L0 5.33975C0 1.49075 4.16667 -0.914883 7.5 1.00962L22.5 9.66987Z"/>
