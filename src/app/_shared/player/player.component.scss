@@ -2,6 +2,7 @@
     --player-background-color: #0C1118;
     --player-background-color-transparent: rgba(12, 17, 24, 0.5);
     --player-second-color: rgb(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b));
+    --player-second-transparent-0-8: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0.8);
     --player-second-transparent-0-6: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0.6);
     --player-second-transparent-0-4: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0.4);
     --player-second-transparent-0: rgba(var(--player-second-color-r), var(--player-second-color-g), var(--player-second-color-b), 0);
@@ -21,7 +22,11 @@
     max-width: 960px;
     margin: 1em auto;
 
-    .player-p { margin-bottom: 0.1em; }
+    .player-top-bar {
+        display: flex;
+        justify-content: space-between;
+        .player-p { margin-bottom: 0.1em; }
+    }
 
     .player {
         position: relative;

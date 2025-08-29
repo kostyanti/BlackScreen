@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, HostListener, OnInit, AfterViewInit, NgZone, ChangeDetectorRef, Input } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener, OnInit, NgZone, OnDestroy } from '@angular/core';
 import { SliderComponent } from '../slider/slider.component';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -7,14 +7,7 @@ import { defaultSkipKey, SkipKey } from './SkipKey';
 import { defaultSettings, Settings } from './Settings';
 import { StorageUtil } from '../StorageUtil';
 import Hls from 'hls.js';
-
-declare global {
-  interface Window {
-    __onGCastApiAvailable: (isAvailable: boolean) => void;
-    cast: any;
-    chrome: any;
-  }
-}
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-player',
@@ -30,17 +23,20 @@ declare global {
     './playerC.component.scss'
   ]
 })
-export class PlayerComponent implements AfterViewInit {
+export class PlayerComponent implements OnInit, OnDestroy {
   //#region fields
   private static readonly SETTINGS_KEY = 'settings-key';
   private static readonly PLAYER_VOLUME_KEY = 'player-volume';
 
-  videoUrl: string = 'https://p78.kodik.info/s/m/Ly9jbG91ZC5rb2Rpay1zdG9yYWdlLmNvbS91c2VydXBsb2Fkcy9kMzZkM2FlMS1lYmQzLTQ4MDAtYmFmMi01OTcyZDVhNzY5MDU/f5d0647cfc6e5e3441299b67645e1390786845d318683a9051cf31fc42c1821c:2025082910/720.mp4:hls:manifest.m3u8';
+  readyToView: boolean = false;
+  safeUrl: SafeResourceUrl;
+  iframeUrl: string = '//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p';
 
-  @ViewChild('videoEl', { static: true }) videoEl!: ElementRef<HTMLVideoElement>;
+  @ViewChild('videoEl') videoEl!: ElementRef<HTMLVideoElement>;
+  @ViewChild('frameWrapper') frameWrapper!: ElementRef<HTMLIFrameElement>;
   @ViewChild('mainColorPicker') mainColorPicker!: ElementRef<HTMLInputElement>; 
   @ViewChild('secondColorPicker') secondColorPicker!: ElementRef<HTMLInputElement>;
-  @ViewChild('playerWrapper', { static: true }) playerWrapper!: ElementRef;
+  @ViewChild('playerWrapper') playerWrapper!: ElementRef;
 
   SettingsPanel = SettingsPanel;
 
@@ -81,17 +77,39 @@ export class PlayerComponent implements AfterViewInit {
 
   constructor(
     private ngZone: NgZone,
-  ) {}
+    private sanitizer: DomSanitizer,
+  ) { 
+    this.loadSettings();
+    const url = '//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p';
+    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 
-  ngAfterViewInit() {
+  ngOnInit() {
+    window.addEventListener('message', this.kodikMessageListener);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('message', this.kodikMessageListener);
+  }
+
+  kodikMessageListener = (event: MessageEvent) => {
+    if (event.data?.key === 'kodik_player_play') {
+      if (!this.readyToView) {
+        this.playCustom();
+      }
+    }
+  };
+
+  playCustom() {
     const video = this.videoEl.nativeElement;
+    const videoUrl = StorageUtil.load<string>('videoUrl', '', sessionStorage);
 
-    if (Hls.isSupported() && this.videoUrl) {
+    if (Hls.isSupported() && videoUrl) {
       const hls = new Hls();
-      hls.loadSource(this.videoUrl);
+      hls.loadSource(videoUrl);
       hls.attachMedia(video);
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = this.videoUrl;
+      video.src = videoUrl;
       video.addEventListener('loadedmetadata', () => video.play());
     }
 
@@ -125,15 +143,13 @@ export class PlayerComponent implements AfterViewInit {
       }
     });
 
-    this.loadSettings();
-    
-    return;
+    if(this.settings.CustomPlayer) {
+      this.togglePlay();
+      const kodikIframe = this.frameWrapper.nativeElement.contentWindow;
+      if(kodikIframe) kodikIframe.postMessage({ key: "kodik_player_api", value: { method: "pause" } }, '*');
+    }
 
-    window.__onGCastApiAvailable = (isAvailable: boolean) => {
-      if (isAvailable) {
-        this.initializeCast();
-      }
-    };
+    this.readyToView = true;
   }
 
   private formatTime(seconds: number): string {
@@ -182,25 +198,6 @@ export class PlayerComponent implements AfterViewInit {
     this.resetControls();
   }
 
-  async togglePiP() {
-    const video = this.videoEl.nativeElement;
-
-    if (!document.pictureInPictureEnabled) {
-      alert('Picture-in-Picture не підтримується вашим браузером');
-      return;
-    }
-
-    try {
-      if (video !== document.pictureInPictureElement) {
-        await video.requestPictureInPicture();
-      } else {
-        await document.exitPictureInPicture();
-      }
-    } catch (err) {
-      console.error('Помилка при включенні PiP:', err);
-    }
-  }
-
   togglePlay() {
     const video = this.videoEl.nativeElement;
     this.isPlaying = !this.isPlaying;
@@ -239,35 +236,6 @@ export class PlayerComponent implements AfterViewInit {
       else if ((document as any).webkitExitFullscreen) { (document as any).webkitExitFullscreen(); } 
       else if ((document as any).msExitFullscreen) { (document as any).msExitFullscreen(); }
     }
-  }
-
-  initializeCast() {
-    const context = window.cast.framework.CastContext.getInstance();
-    context.setOptions({
-      receiverApplicationId: 'YOUR_CUSTOM_APP_ID',
-      autoJoinPolicy: window.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
-    });
-  }
-
-  startCasting() {
-
-  }
-
-  casting(url: string, base: string, season: string, episode: string) {
-    const context = window.cast.framework.CastContext.getInstance();
-    context.requestSession()
-      .then(() => {
-        const session = context.getCurrentSession();
-        const message = {
-          url: url,
-          base: base,
-          season: season,
-          episode: episode
-        };
-        session.sendMessage('urn:x-cast:com.example.custom', message)
-          .then(() => console.log('Message sent'))
-          .catch((err: any) => console.error('Error sending message', err));
-      });
   }
 
   toggleSettings(panel: SettingsPanel) {

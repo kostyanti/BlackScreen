@@ -3,18 +3,18 @@ export class StorageUtil {
     return typeof window !== 'undefined' && !!window.localStorage;
   }
 
-  public static save<T>(key: string, data: T): void {
+  public static save<T>(key: string, data: T, storage: Storage = localStorage): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.setItem(key, JSON.stringify(data));
+      storage.setItem(key, JSON.stringify(data));
     } catch (e) {
       console.error(`Could not save data for the key "${key}"`, e);
     }
   }
 
-  public static load<T>(key: string, fallback: T): T {
+  public static load<T>(key: string, fallback: T, storage: Storage = localStorage): T {
     if (!this.isBrowser()) return fallback;
-    const raw = localStorage.getItem(key);
+    const raw = storage.getItem(key);
     if (!raw) return fallback;
     try {
       return JSON.parse(raw) as T;
@@ -24,10 +24,10 @@ export class StorageUtil {
     }
   }
 
-  public static remove(key: string): void {
+  public static remove(key: string, storage: Storage = localStorage): void {
     if (!this.isBrowser()) return;
     try {
-      localStorage.removeItem(key);
+      storage.removeItem(key);
     } catch (e) {
       console.error(`Unable to delete key "${key}"`, e);
     }

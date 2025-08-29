@@ -1,0 +1,47 @@
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2em;
+    flex: 1;
+}
+
+.error-code {
+    font-size: 8rem;
+    font-weight: 700;
+    color: var(--main-color);
+    text-shadow: 0 0 15px var(--second-transparent-0-6);
+}
+
+.error-message {
+    font-size: 2rem;
+    margin: 0.5em 0;
+    font-weight: 500;
+    color: var(--second-color);
+}
+
+.error-description {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--second-transparent-0-6);
+    margin-bottom: 2em;
+}
+
+.back-button {
+    padding: 0.8em 1.5em;
+    background-color: var(--third-color);
+    color: var(--main-color);
+    border: none;
+    border-radius: 0.8em;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+}
+
+.back-button:hover {
+    background-color: var(--second-color);
+    color: var(--fourth-color);
+}

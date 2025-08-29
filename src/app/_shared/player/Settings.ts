@@ -5,6 +5,7 @@ export interface Settings {
     SelectedQuality: number;
     SkipKeys: boolean;
     AutoPlay: boolean;
+    CustomPlayer: boolean;
     SleepCheckTimer: number;
 
     skipKeys: SkipKey[];
@@ -20,6 +21,7 @@ export const defaultSettings: Settings = {
     SelectedQuality: 1,
     SkipKeys: false,
     AutoPlay: false,
+    CustomPlayer: false,
     SleepCheckTimer: 1,
 
     skipKeys: [],
@@ -27,5 +29,5 @@ export const defaultSettings: Settings = {
     playerMainColor: "#D9D9D9",
     playerSecondColorR: 100,
     playerSecondColorG: 100,
-    playerSecondColorB: 100
+    playerSecondColorB: 100,
 }

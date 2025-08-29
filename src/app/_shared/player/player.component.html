@@ -1,18 +1,27 @@
 <main class="player-main">
-    <p class="player-p">Приятного просмотра :)</p>
-    <div #playerWrapper class="player"
+    <header class="player-top-bar">
+        <p class="player-p">Приятного просмотра :)</p>
+        <div style="display: flex;">
+            <p class="player-p">Кастомный проигрователь</p>
+
+            <label class="switch">
+                <input type="checkbox" [(ngModel)]="settings.CustomPlayer" (change)="saveSettings()">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </header>
+    <div 
+     #playerWrapper
+     class="player"
      (mouseenter)="onMouseEnter()"
      (mouseleave)="onMouseLeave()"
      [class.hide-cursor]="!controlsVisible && timerIsOn">
-        <video #videoEl [src]="videoUrl"> </video>
-        <header class="player-header player-controls" [class.hidden]="!controlsVisible">
+        <video 
+            #videoEl
+            [ngStyle]="{ 'display': settings.CustomPlayer ? '' : 'none' }" > 
+        </video>
+        <header class="player-header player-controls" [class.hidden]="!controlsVisible" [ngStyle]="{ 'display': settings.CustomPlayer ? '' : 'none' }">
             <nav>
-                <button class="drop-down decode-player">
-                    Kodik 
-                    <svg class="player-arrow" width="19" height="16" viewBox="0 0 19 16" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12.0981 14.5C10.9434 16.5 8.05662 16.5 6.90192 14.5L1.27276 4.75C0.118057 2.75 1.56143 0.25 3.87083 0.25L15.1292 0.25C17.4386 0.25 18.8819 2.75 17.7272 4.75L12.0981 14.5Z"/>
-                    </svg>
-                </button>
                 <button class="drop-down voice">
                     Озвучка
                     <svg class="player-arrow" width="19" height="16" viewBox="0 0 19 16" xmlns="http://www.w3.org/2000/svg">
@@ -33,20 +42,11 @@
                 </button>
             </nav>
             <nav>
-                <button class="chrome-cast" (click)="startCasting()">
-                    <svg width="32" height="26" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1.00294 11V6C1.00294 3.23858 3.24151 1 6.00293 1H26.0029C28.7643 1 31.0029 3.23858 31.0029 6V20C31.0029 22.7614 28.7635 25 26.0021 25C22.4224 25 19.389 25 15.0029 25M1 13.5V13.5C7.35127 13.5 12.5 18.6487 12.5 25V25M1 16.5V16.5C5.69442 16.5 9.5 20.3056 9.5 25V25M1.00294 19.5V19.5C4.03888 19.5 6.5 21.9641 6.5 25V25M1.00294 23V23C2.10588 23 3 23.8971 3 25V25" fill="none" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
-                <button class="mini-player" (click)="togglePiP()">
-                    <svg width="32" height="26" viewBox="0 0 32 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M31 12.5V6C31 3.23858 28.7614 1 26 1H6C3.23858 1 1 3.23858 1 6V20C1 22.7614 3.2395 25 6.00093 25C8.97964 25 11.2645 25 15.5 25M21 25H27C29.2091 25 31 23.2091 31 21V18C31 15.7909 29.2091 14 27 14H21C18.7909 14 17 15.7909 17 18V21C17 23.2091 18.7909 25 21 25Z" stroke-width="2" fill="none" stroke-linecap="round"/>
-                    </svg>
-                </button>
+                
             </nav>
         </header>
         <div class="space"></div>
-        <footer class="player-footer player-controls" [class.hidden]="!controlsVisible">
+        <footer class="player-footer player-controls" [class.hidden]="!controlsVisible" [ngStyle]="{ 'display': (settings.CustomPlayer && this.readyToView) ? '' : 'none' }">
             <button class="player-play-button player-button" (click)="togglePlay()">
                 <svg class="img-play" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" *ngIf="!isPlaying">
                     <path d="M22.5 9.66987C25.8333 11.5944 25.8333 16.4056 22.5 18.3301L7.50001 26.9904C4.16667 28.9149 0 26.5093 0 22.6603L0 5.33975C0 1.49075 4.16667 -0.914883 7.5 1.00962L22.5 9.66987Z"/>
@@ -383,7 +383,8 @@
             </div>
         </footer>
         <div class="skip-segment-panel" 
-            [ngClass]="{'visible': currentSkipSegment}">
+            [ngClass]="{'visible': currentSkipSegment}"
+            [ngStyle]="{ 'display': settings.CustomPlayer ? 'none' : '' }">
             <div class="buttons">
                 <button class="skip" 
                         [style.--progress-width.%]="skipProgress" 
@@ -397,5 +398,16 @@
                 <button class="show" (click)="showElement()">Смотреть</button>
             </div>
         </div>
+        <iframe 
+            #frameWrapper
+            [ngStyle]="{ 
+                'display': this.settings.CustomPlayer && this.readyToView ? 'none' : '',
+                'opacity': !this.settings.CustomPlayer ? '1' : '0'
+            }" 
+            [src]="safeUrl" 
+            frameborder="0"
+            allowfullscreen
+            allow="autoplay *;">
+        </iframe>
     </div>
 </main>
