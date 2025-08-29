@@ -10,7 +10,14 @@
             frameborder="0" 
             allowfullscreen 
             allow="autoplay *; fullscreen *"></iframe> -->
-        <video src="//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p"></video>
+        <video 
+            #videoEl
+            src="//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p"
+            muted
+            playsinline
+            disablePictureInPicture
+            controlslist="nodownload noplaybackrate nofullscreen">
+        </video>
         <header class="player-header player-controls" [class.hidden]="true || !controlsVisible">
             <nav>
                 <button class="drop-down decode-player">
