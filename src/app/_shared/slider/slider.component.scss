@@ -22,8 +22,6 @@
     var(--slider-bg-color, #333) var(--slider-progress, 50%),
     var(--slider-bg-color, #333) 100%
   );
-
-  transition: 0.5s ease;
 }
 
 .slider-thumb {
@@ -34,6 +32,4 @@
   height: var(--slider-height);
   background: var(--slider-thumb-color, #ddd);
   border-radius: 50%;
-
-  transition: left 0.5s ease;
 }
