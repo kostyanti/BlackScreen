@@ -90,9 +90,6 @@ export class PlayerComponent implements AfterViewInit {
       const hls = new Hls();
       hls.loadSource(this.videoUrl);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        video.play();
-      });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = this.videoUrl;
       video.addEventListener('loadedmetadata', () => video.play());
