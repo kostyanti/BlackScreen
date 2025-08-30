@@ -11,13 +11,12 @@ import { TitleItem } from './titleItem';
   styleUrl: './pagable.component.scss'
 })
 export class PagableComponent {
-  private static readonly VIEWED_KEY = 'viewed-key';
+  private static readonly HISTORY_KEY = 'history-key';
 
   totalPages: number = 1;
   currentPage: number = 1;
-  @Input() selectedPage: SelectPage = SelectPage.Main;
+  @Input() selectedPage: SelectPage = SelectPage.History;
   @Input() selectedGenre: string = '';
-  @Output() pageChange = new EventEmitter<number>();
 
   titles: TitleItem[] = [];
 
@@ -35,24 +34,19 @@ export class PagableComponent {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     this.currentPage = page;
-    this.pageChange.emit(page);
     this.loadContent();
   }
 
   loadContent() {
     switch(this.selectedPage) {
-      case SelectPage.Main:
-        this.titles = StorageUtil.load<TitleItem[]>(PagableComponent.VIEWED_KEY, []);
-        if(this.titles.length < 1) {
-          this.selectedPage = SelectPage.Films;
-          this.loadContent();
-        }
+      case SelectPage.History:
+        this.titles = StorageUtil.load<TitleItem[]>(PagableComponent.HISTORY_KEY, []);
         break;
       case SelectPage.Applications:
         this.titles = this.loadApplications();
         break;
       default:
-        this.titles = this.loadFromKodik(this.selectedPage, this.selectedGenre);
+        this.titles = this.loadFromKodik();
         break;
     }
   }
@@ -61,7 +55,7 @@ export class PagableComponent {
     return [];
   }
 
-  loadFromKodik(pageType: SelectPage, genre: string): TitleItem [] {
+  loadFromKodik(): TitleItem [] {
     return [];
   }
 }

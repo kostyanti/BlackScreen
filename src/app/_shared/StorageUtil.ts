@@ -12,6 +12,28 @@ export class StorageUtil {
     }
   }
 
+  public static add<T>(key: string, data: T, storage: Storage = localStorage): void{
+    if (!this.isBrowser()) return;
+    try {
+      const raw = storage.getItem(key);
+      let arr: T[] = [];
+
+      if (raw) {
+        try {
+          arr = JSON.parse(raw) as T[];
+          if (!Array.isArray(arr)) arr = [arr];
+        } catch {
+          arr = [];
+        }
+      }
+
+      arr.push(data);
+      storage.setItem(key, JSON.stringify(arr));
+    } catch (e) {
+      console.error(`Could not add data for the key "${key}"`, e);
+    }
+  }
+
   public static load<T>(key: string, fallback: T, storage: Storage = localStorage): T {
     if (!this.isBrowser()) return fallback;
     const raw = storage.getItem(key);

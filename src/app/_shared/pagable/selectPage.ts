@@ -1,8 +1,5 @@
 export enum SelectPage {
-    Main = 'main',
-    Films = 'films',
-    Series = 'series',
-    Cartoons = 'cartoons',
-    Anime = 'anime',
+    History = 'history',
+    Search = 'search',
     Applications = 'applications'
 }

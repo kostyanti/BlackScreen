@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Black Screen custom player",
-  "version": "0.1",
+  "name": "Black Screen player",
+  "version": "0.2",
+  "description": "Addon for the player at https://kostyanti.github.io/BlackScreen/",
   "permissions": [
     "webRequest",
     "webRequestBlocking",
@@ -12,7 +13,12 @@
     "persistent": true
   },
   "browser_action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "content_scripts": [
     {
