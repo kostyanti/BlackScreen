@@ -1,17 +1,17 @@
 <div class="content">
   <p class="hello-label">
-    {{ selectedPage === 'history' ? 'История просмотра' : selectedPage | titlecase }}
+    {{ selectedPage | titlecase }}
   </p>
 
   <div class="titles">
     <div class="title" *ngFor="let title of titles">
       <img class="img" [src]="title.img"/>
       <p class="name">{{ title.name }}</p>
-      <p class="info">{{ title.year}}, {{title.country}}, {{title.genre}}</p>
+      <p class="info">{{ title.shortInfo }}</p>
     </div>
   </div>
 
-  <div class="pagination">
+  <div class="pagination" *ngIf="totalPages > 1">
     <button (click)="goToPage(1)">|←</button>
     <button (click)="goToPage(currentPage - 1)">←</button>
 

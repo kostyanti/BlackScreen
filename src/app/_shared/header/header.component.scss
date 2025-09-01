@@ -41,20 +41,21 @@
             .langs {
                 display: flex;
                 align-items: center;
-
+                
                 .lang {
                     text-decoration: none;
                     transition: color 0.3s ease;
                     color: var(--main-color);
                     padding: 4px 6px;
                     border-radius: 5px;
+                    cursor: pointer;
 
                     &:hover{ background-color: var(--second-transparent-0-6); }
                 }
 
                 .active { background-color: var(--second-transparent-0-4); cursor: default; }
 
-                .divider { margin: 0 6px; color: var(--main-color); }
+                .divider { margin: 0 6px; color: var(--main-color); cursor: default; }
             }
 
             .search-btn {

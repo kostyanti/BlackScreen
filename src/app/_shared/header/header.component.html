@@ -1,5 +1,5 @@
 <div class="content header">
-    <img class="logo" src="./Logo.png" alt="BlackScreen Logo" />
+    <img class="logo" src="./Logo.png" alt="BlackScreen Logo" (click)="selectPage(SelectPage.History)" />
 
     <div class="nav-components">
         <div class="lang-search">
@@ -10,15 +10,15 @@
                 <span class="divider">|</span>
                 <a class="lang active">RU</a>
             </div>
-            <button class="search-btn">
+            <button class="search-btn" (click)="selectPage(SelectPage.Search)">
                 <img src="./icons/searsh.svg" alt="">
                 Поиск
             </button>
         </div>
 
         <nav class="nav-links">
-            <a class="link">История просмотра</a>
-            <a class="link">Приложения</a>
+            <a class="link" (click)="selectPage(SelectPage.History)">История просмотра</a>
+            <a class="link" (click)="selectPage(SelectPage.Applications)">Приложения</a>
         </nav>
     </div>
 </div>

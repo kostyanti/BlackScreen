@@ -6,16 +6,18 @@ import { SettingsPanel } from './SettingsPanel';
 import { defaultSkipKey, SkipKey } from './SkipKey';
 import { defaultSettings, Settings } from './Settings';
 import { StorageUtil } from '../StorageUtil';
-import Hls from 'hls.js';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import Hls from 'hls.js';
+import { FormatTimePipe, hexToRgb, rgbToHex } from "./player.module";
 
 @Component({
   selector: 'app-player',
   imports: [
     SliderComponent,
     FormsModule,
-    CommonModule
-  ],
+    CommonModule,
+    FormatTimePipe
+],
   templateUrl: './player.component.html',
   styleUrls: [
     './player.component.scss',
@@ -31,6 +33,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   readyToView: boolean = false;
   safeUrl: SafeResourceUrl;
   iframeUrl: string = '//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p';
+  oldUrl: string = '';
 
   @ViewChild('videoEl') videoEl!: ElementRef<HTMLVideoElement>;
   @ViewChild('frameWrapper') frameWrapper!: ElementRef<HTMLIFrameElement>;
@@ -39,6 +42,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   @ViewChild('playerWrapper') playerWrapper!: ElementRef;
 
   SettingsPanel = SettingsPanel;
+  rgbToHex = rgbToHex;
 
   settingsVisible: boolean = false;
   qualitySettingsVisible: boolean = false;
@@ -60,9 +64,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
  
   currentSoundValue: number = 0;
   currentPlayerValue: number = 0;
-  currentPlayerLabel: string = '00:00';
   videoDuration: number = 0;
-  videoDurationLabel: string = '00:00';
   selectedSkipKey: number = 0;
   
   scrollPosition = { x: 0, y: 0 };
@@ -80,59 +82,8 @@ export class PlayerComponent implements OnInit, OnDestroy {
     private sanitizer: DomSanitizer,
   ) { 
     this.loadSettings();
-    const url = '//aniqit.com/serial/52881/917a6870c263168ab0e94a05116902e5/720p';
-    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-  }
 
-  ngOnInit() {
-    window.addEventListener('message', this.kodikMessageListener);
-  }
-
-  ngOnDestroy() {
-    window.removeEventListener('message', this.kodikMessageListener);
-  }
-
-  kodikMessageListener = (event: MessageEvent) => {
-    if (event.data?.key === 'kodik_player_play') {
-      if (!this.readyToView) {
-        this.playCustom();
-      }
-    }
-  };
-
-  playCustom() {
-    const video = this.videoEl.nativeElement;
-    const videoUrl = StorageUtil.load<string>('videoUrl', '', sessionStorage);
-
-    if (Hls.isSupported() && videoUrl) {
-      const hls = new Hls();
-      hls.loadSource(videoUrl);
-      hls.attachMedia(video);
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = videoUrl;
-      video.addEventListener('loadedmetadata', () => video.play());
-    }
-
-    video.addEventListener('timeupdate', () => {
-      this.ngZone.run(() => {
-        this.currentPlayerValue = video.currentTime;
-        this.currentPlayerLabel = this.formatTime(Math.floor(video.currentTime));
-      });
-    });
-
-    video.addEventListener('loadedmetadata', () => {
-      this.ngZone.run(() => {
-        this.videoDuration = video.duration;
-        this.videoDurationLabel = this.formatTime(Math.floor(video.duration));
-      });
-    });
-
-    this.ngZone.runOutsideAngular(() => {
-      const volume = StorageUtil.load<number>(PlayerComponent.PLAYER_VOLUME_KEY, 0);
-      setTimeout(() => {
-        this.ngZone.run(() => this.setVolume(volume));
-      });
-    });
+    this.safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.iframeUrl);
 
     document.addEventListener('click', (e) => {
       const panel = document.querySelector('.all-settings');
@@ -142,6 +93,54 @@ export class PlayerComponent implements OnInit, OnDestroy {
         this.closeAllSetings();
       }
     });
+  }
+
+  ngOnInit() { window.addEventListener('message', this.kodikMessageListener); }
+
+  ngOnDestroy() { this.saveSettings(); window.removeEventListener('message', this.kodikMessageListener); }
+
+  kodikMessageListener = (event: MessageEvent) => {
+    if (event.data?.key === 'kodik_player_play') {
+      this.prepareCustomPlayer();
+    }
+  };
+
+  prepareCustomPlayer() {
+    const video = this.videoEl.nativeElement;
+    const videoUrl = StorageUtil.load<string>('videoUrl', '', sessionStorage);
+
+    if (videoUrl === ''){
+      //Add notification to problem
+      return;
+    }
+
+    if (this.oldUrl === videoUrl) return;
+    this.oldUrl = videoUrl;
+
+    if (Hls.isSupported() && videoUrl) {
+      const hls = new Hls();
+      hls.loadSource(videoUrl);
+      hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoUrl;
+    }
+
+    video.addEventListener('timeupdate', () => {
+      this.ngZone.run(() => {
+        this.currentPlayerValue = video.currentTime;
+      });
+    });
+
+    video.addEventListener('loadedmetadata', () => {
+      this.ngZone.run(() => {
+        this.videoDuration = video.duration;
+      });
+    });
+
+    this.ngZone.runOutsideAngular(() => {
+      const volume = StorageUtil.load<number>(PlayerComponent.PLAYER_VOLUME_KEY, 0);
+      this.ngZone.run(() => this.setVolume(volume));
+    });
 
     if(this.settings.CustomPlayer) {
       this.togglePlay();
@@ -150,17 +149,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
     }
 
     this.readyToView = true;
-  }
-
-  private formatTime(seconds: number): string {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-
-    if (h > 0) {
-      return [h, m, s].map(v => String(v).padStart(2, '0')).join(':');
-    }
-    return [m, s].map(v => String(v).padStart(2, '0')).join(':');
   }
 
   startInactivityTimer() {
@@ -285,7 +273,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
   addSkipKey() {
     this.settings.skipKeys.push({ ...defaultSkipKey });
-    this.saveSettings();
   }
 
   selectKey(id: number) {
@@ -300,11 +287,11 @@ export class PlayerComponent implements OnInit, OnDestroy {
     event?.stopPropagation();
     this.changeSkipKeysSettingsVisible = false;
     this.settings.skipKeys.splice(index, 1);
-    this.saveSettings();
   }
 
   saveSettings() {
     StorageUtil.save<Settings>(PlayerComponent.SETTINGS_KEY, this.settings);
+    StorageUtil.save<number>(PlayerComponent.PLAYER_VOLUME_KEY, this.currentSoundValue);
   }
 
   loadSettings() {
@@ -326,28 +313,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
 
     this.settings.playerMainColor = input.value;
     this.applyColors();
-    this.saveSettings();
   }
 
   setSecondColor(event: Event) {
     const input = event.target as HTMLInputElement | null;
     if (!input) return;
 
-    const hexColor = input.value;
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
+    const rgb = hexToRgb(input.value);
 
-    this.settings.playerSecondColorR = r;
-    this.settings.playerSecondColorG = g;
-    this.settings.playerSecondColorB = b;
+    this.settings.playerSecondColorR = rgb.r;
+    this.settings.playerSecondColorG = rgb.g;
+    this.settings.playerSecondColorB = rgb.b;
 
     this.applyColors();
-    this.saveSettings();
-  }
-
-  toHex(value: number): string {
-    return value.toString(16).padStart(2, '0').toUpperCase();
   }
 
   resetColors() {
@@ -355,17 +333,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.settings.playerSecondColorR = defaultSettings.playerSecondColorR;
     this.settings.playerSecondColorG = defaultSettings.playerSecondColorG;
     this.settings.playerSecondColorB = defaultSettings.playerSecondColorB;
+
     this.applyColors();
-    this.saveSettings();
   }
 
-  openMainColorPicker() {
-    this.mainColorPicker.nativeElement.click();
-  }
+  openMainColorPicker() { this.mainColorPicker.nativeElement.click(); }
 
-  openSecondColorPicker() {
-    this.secondColorPicker.nativeElement.click();
-  }
+  openSecondColorPicker() { this.secondColorPicker.nativeElement.click(); }
 
   checkSkipSegment() {
     if (!this.settings.skipKeys || !this.settings.skipKeys.length) return;
@@ -441,11 +415,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
   setVolume(value: number) {
     this.currentSoundValue = value;
     this.videoEl.nativeElement.volume = value / 100;
-    StorageUtil.save<number>(PlayerComponent.PLAYER_VOLUME_KEY, value);
   }
 
   seekTo(value: number) {
-    this.currentPlayerValue = value;
-    this.videoEl.nativeElement.currentTime = value;
+    this.videoEl.nativeElement.currentTime = this.currentPlayerValue = value;
   }
 }

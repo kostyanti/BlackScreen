@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { StorageUtil } from '../StorageUtil';
+import { SelectPage } from '../pagable/selectPage';
 
 @Component({
   selector: 'app-header',
@@ -7,5 +9,10 @@ import { Component } from '@angular/core';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent {
-
+  SelectPage = SelectPage;
+  
+  selectPage(sp: SelectPage) {
+    StorageUtil.save<SelectPage>('selected-page', sp, sessionStorage);
+    window.location.href = './';
+  }
 }

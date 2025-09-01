@@ -1,20 +1,19 @@
 export interface TitleItem {
   img: string;
   name: string;
-  country: string;
-  year: string;
-  genre?: string;
+  shortInfo: string;
   
   episode: number;
   season: number;
+  lasturl: string;
 }
 
 export const defaultTitleItem: TitleItem = {
   img: "",
   name: "",
-  country: "",
-  year: "",
+  shortInfo: "",
 
   episode: 1,
-  season: 1
+  season: 1,
+  lasturl: "",
 }

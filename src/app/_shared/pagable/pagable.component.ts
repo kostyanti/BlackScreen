@@ -15,17 +15,32 @@ export class PagableComponent {
 
   totalPages: number = 1;
   currentPage: number = 1;
-  @Input() selectedPage: SelectPage = SelectPage.History;
-  @Input() selectedGenre: string = '';
+  selectedPage: SelectPage = SelectPage.History;
 
   titles: TitleItem[] = [];
 
   ngOnInit() {
+    this.selectedPage = StorageUtil.load<SelectPage>('selected-page', SelectPage.History, sessionStorage);
     this.loadContent();
   }
 
   get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    const maxVisible = 7;
+    const half = Math.floor(maxVisible / 2);
+
+    let start = this.currentPage - half;
+    let end = this.currentPage + half;
+
+    if (start < 1) {
+      start = 1;
+      end = Math.min(this.totalPages, start + maxVisible - 1);
+    }
+    if (end > this.totalPages) {
+      end = this.totalPages;
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   }
 
   goToPage(page: number) {
@@ -39,23 +54,21 @@ export class PagableComponent {
 
   loadContent() {
     switch(this.selectedPage) {
-      case SelectPage.History:
-        this.titles = StorageUtil.load<TitleItem[]>(PagableComponent.HISTORY_KEY, []);
-        break;
-      case SelectPage.Applications:
-        this.titles = this.loadApplications();
-        break;
-      default:
-        this.titles = this.loadFromKodik();
-        break;
+      case SelectPage.History: this.loadHistory(); break;
+      case SelectPage.Applications: this.loadApplications(); break;
+      default: this.loadList(); break;
     }
   }
 
-  loadApplications(): TitleItem [] {
-    return [];
+  loadHistory() {
+    this.titles = StorageUtil.load<TitleItem[]>(PagableComponent.HISTORY_KEY, []);
   }
 
-  loadFromKodik(): TitleItem [] {
-    return [];
+  loadApplications() {
+    this.titles = [];
+  }
+
+  loadList() {
+    this.titles = [];
   }
 }

@@ -57,7 +57,7 @@
                 </svg>
             </button>
             <nav class="progress-container">
-                <p class="progress-time">{{currentPlayerLabel}}/{{videoDurationLabel}}</p>
+                <p class="progress-time">{{currentPlayerValue | formatTime }}/{{videoDuration | formatTime }}</p>
                 <app-slider 
                     class="slider"
                     [min]="0"
@@ -322,7 +322,7 @@
                             (input)="setMainColor($event)">
                             
                         <input #secondColorPicker type="color"
-                            [value]="'#'+toHex(settings.playerSecondColorR)+toHex(settings.playerSecondColorG)+toHex(settings.playerSecondColorB)"
+                            [value]="'#'+rgbToHex(settings.playerSecondColorR, settings.playerSecondColorG, settings.playerSecondColorB)"
                             style="display:none"
                             (input)="setSecondColor($event)">
 
@@ -407,7 +407,7 @@
             [src]="safeUrl" 
             frameborder="0"
             allowfullscreen
-            allow="autoplay *;">
+            >
         </iframe>
     </div>
 </main>
