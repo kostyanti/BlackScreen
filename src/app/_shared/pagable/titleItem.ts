@@ -1,4 +1,5 @@
 export interface TitleItem {
+  id: string;
   img: string;
   name: string;
   shortInfo: string;
@@ -9,6 +10,7 @@ export interface TitleItem {
 }
 
 export const defaultTitleItem: TitleItem = {
+  id: "",
   img: "",
   name: "",
   shortInfo: "",

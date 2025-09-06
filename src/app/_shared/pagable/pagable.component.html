@@ -1,7 +1,45 @@
 <div class="content">
-  <p class="hello-label">
-    {{ selectedPage | titlecase }}
-  </p>
+  <div class="nav-bar">
+    <p class="hello-label">
+      {{ selectedPage | titlecase }}
+    </p>
+    
+    <div *ngIf="selectedPage === SelectPage.Search" class="search-group">
+      <div class="filter-menu">
+        <div class="filter-button">
+          <button class="btn">Фильтры</button>
+
+          <div class="filter-dropdown">
+            <div class="categories">
+              <button 
+                *ngFor="let cat of contentCategories"
+                class="category-btn"
+                [class.active]="selectedCategory === cat"
+                (click)="selectCategory(cat)">
+                {{ cat | titlecase }}
+              </button>
+            </div>
+
+            <div class="genres" *ngIf="selectedCategory">
+              <button 
+                *ngFor="let genre of availableGenres"
+                class="genre-btn"
+                [class.active]="selectedGenre === genre"
+                (click)="selectGenre(genre)">
+                {{ genre }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <input class="btn search-box" type="text" [(ngModel)]="searchQuery" placeholder="Введите название..." />
+      <button class="btn search-btn" (click)="onSearch()">
+        <img src="./icons/searsh.svg" alt="">
+        {{ isLoading ? 'Загрузка' : 'Поиск' }}
+      </button>
+    </div>
+  </div>
 
   <div class="titles">
     <div class="title" *ngFor="let title of titles">
@@ -11,17 +49,17 @@
     </div>
   </div>
 
-  <div class="pagination" *ngIf="totalPages > 1">
-    <button (click)="goToPage(1)">|←</button>
-    <button (click)="goToPage(currentPage - 1)">←</button>
+  <div class="pagination">
+    <!-- <button (click)="goToPage(1)">|←</button> -->
+    <button (click)="goToPrevPage()" *ngIf="prevPageUrl != null" >←</button>
 
-    <button *ngFor="let page of pages" 
+    <!-- <button *ngFor="let page of pages" 
             [class.active]="page === currentPage" 
             (click)="goToPage(page)">
       {{ page }}
-    </button>
+    </button> -->
 
-    <button (click)="goToPage(currentPage + 1)">→</button>
-    <button (click)="goToPage(totalPages)">→|</button>
+    <button (click)="goToNextPage()" *ngIf="nextPageUrl != null">→</button>
+    <!-- <button (click)="goToPage(totalPages)">→|</button> -->
   </div>
 </div>
